@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="ejb-jar" name="EJB-twitter:ejb">
-    <output-path>$PROJECT_DIR$/ejb_modules/EJB-twitter/target</output-path>
-    <root id="archive" name="EJB-twitter-1.0-SNAPSHOT.jar">
-      <element id="artifact" artifact-name="EJB-twitter:ejb exploded" />
-    </root>
-  </artifact>
-</component>
