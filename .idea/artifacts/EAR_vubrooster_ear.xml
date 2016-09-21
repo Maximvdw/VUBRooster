@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="ear" name="EAR-vubrooster:ear">
+    <output-path>$PROJECT_DIR$/ejb_modules/EAR-vubrooster/target</output-path>
+    <root id="archive" name="EAR-vubrooster-1.0-SNAPSHOT.ear">
+      <element id="artifact" artifact-name="EAR-vubrooster:ear exploded" />
+    </root>
+  </artifact>
+</component>

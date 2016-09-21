@@ -1,0 +1,9 @@
+config: 1
+
+twitter:
+  enabled: false
+  consumerKey: ""
+  consumerSecret: ""
+  accessToken: ""
+  accessTokenSecret: ""
+  owner: ""

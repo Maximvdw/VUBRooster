@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-ejb" name="EJB-vubrooster:ejb exploded">
+    <output-path>$PROJECT_DIR$/ejb_modules/EJB-vubrooster/target/EJB-VUBRooster-1.0-SNAPSHOT</output-path>
+    <root id="root">
+      <element id="javaee-facet-resources" facet="EJB-timetable/ejb/EJB" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/ejb_modules/EJB-timetable/target/EJB-VUBRooster-1.0-SNAPSHOT/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="EJB-timetable" />
+    </root>
+  </artifact>
+</component>

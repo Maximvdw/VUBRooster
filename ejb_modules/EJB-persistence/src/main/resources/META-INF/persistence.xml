@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+
+    <persistence-unit name="vubrooster" transaction-type="JTA">
+        <jta-data-source>java:/vubrooster</jta-data-source>
+
+        <properties>
+            <!--<property name="hibernate.hbm2ddl.auto" value="create-drop" />-->
+            <!--<property name="hibernate.hbm2ddl.auto" value="update" />-->
+            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.globally_quoted_identifier" value="true" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect"/>
+            <property name="hibernate.connection.autocommit" value="false" />
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="false"/>
+        </properties>
+
+        <class>be.vubrooster.ejb.models.BaseModel</class>
+        <class>be.vubrooster.ejb.models.Activity</class>
+        <class>be.vubrooster.ejb.models.ActivityChange</class>
+        <class>be.vubrooster.ejb.models.Course</class>
+        <class>be.vubrooster.ejb.models.CourseVariant</class>
+        <class>be.vubrooster.ejb.models.DayMenu</class>
+        <class>be.vubrooster.ejb.models.Faculty</class>
+        <class>be.vubrooster.ejb.models.StudyProgram</class>
+        <class>be.vubrooster.ejb.models.StudentGroup</class>
+        <class>be.vubrooster.ejb.models.Sync</class>
+        <class>be.vubrooster.ejb.models.TimeTable</class>
+    </persistence-unit>
+</persistence>

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="ejb-jar" name="EJB-vubrooster:ejb">
+    <output-path>$PROJECT_DIR$/ejb_modules/EJB-vubrooster/target</output-path>
+    <root id="archive" name="EJB-VUBRooster-1.0-SNAPSHOT.jar">
+      <element id="artifact" artifact-name="EJB-vubrooster:ejb exploded" />
+    </root>
+  </artifact>
+</component>

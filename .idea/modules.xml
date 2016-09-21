@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ejb_modules/EAR-vubrooster/EAR-vubrooster.iml" filepath="$PROJECT_DIR$/ejb_modules/EAR-vubrooster/EAR-vubrooster.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ejb_modules/EJB-config/EJB-config.iml" filepath="$PROJECT_DIR$/ejb_modules/EJB-config/EJB-config.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ejb_modules/EJB-core/EJB-core.iml" filepath="$PROJECT_DIR$/ejb_modules/EJB-core/EJB-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ejb_modules/EJB-persistence/EJB-persistence.iml" filepath="$PROJECT_DIR$/ejb_modules/EJB-persistence/EJB-persistence.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ejb_modules/EJB-timetable/EJB-vubrooster.iml" filepath="$PROJECT_DIR$/ejb_modules/EJB-timetable/EJB-vubrooster.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ejb_modules/EJB-twitter/EJB-twitter.iml" filepath="$PROJECT_DIR$/ejb_modules/EJB-twitter/EJB-twitter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java_modules/JAVA-utils/JAVA-utils.iml" filepath="$PROJECT_DIR$/java_modules/JAVA-utils/JAVA-utils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/VUBRooster.iml" filepath="$PROJECT_DIR$/.idea/VUBRooster.iml" />
+    </modules>
+  </component>
+</project>

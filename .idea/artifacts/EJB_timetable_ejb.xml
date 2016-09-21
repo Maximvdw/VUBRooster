@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="ejb-jar" name="EJB-timetable:ejb">
+    <output-path>$PROJECT_DIR$/ejb_modules/EJB-timetable/target</output-path>
+    <root id="archive" name="EJB-timetable-1.0-SNAPSHOT.jar">
+      <element id="artifact" artifact-name="EJB-timetable:ejb exploded" />
+    </root>
+  </artifact>
+</component>
