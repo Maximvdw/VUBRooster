@@ -1,7 +1,4 @@
-package be.vubrooster.ejb.user;
-
-import be.vubrooster.ejb.models.StudentGroup;
-import be.vubrooster.ejb.models.Course;
+package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -11,20 +8,44 @@ import java.util.List;
  * User
  * Created by maxim on 18-Sep-16.
  */
-@Entity(name = "users")
-@Table(name = "users")
-public class User {
+@Entity()
+@Table(name = "users", indexes = {
+        @Index(name = "i1", columnList = "id", unique = true),
+})
+@NamedQueries({
+        @NamedQuery(name = "findUsers",
+                query = "SELECT u FROM User u"),
+})
+public class User extends BaseModel{
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+    @Column(name = "firstName")
     private String firstName = "";
+    @Column(name = "lastName")
     private String lastName = "";
+    @Column(name = "email")
     private String email = "";
+    @Column(name = "privateKey")
     private String privateKey = "";
+    @Column(name = "publicKey")
     private String publicKey = "";
-    @OneToMany(cascade = CascadeType.DETACH)
+    @ManyToMany(cascade = CascadeType.DETACH)
+    @JoinTable(name = "user_studentgroups",
+            joinColumns=
+            @JoinColumn(name="user_id", referencedColumnName="id"),
+            inverseJoinColumns=
+            @JoinColumn(name="studentgroup_id", referencedColumnName="id")
+    )
     private List<StudentGroup> groups = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.DETACH)
+    @ManyToMany(cascade = CascadeType.DETACH)
+    @JoinTable(name = "user_hiddencourses",
+            joinColumns=
+            @JoinColumn(name="user_id", referencedColumnName="id"),
+            inverseJoinColumns=
+            @JoinColumn(name="course_id", referencedColumnName="id")
+    )
     private List<Course> hiddenCourses = new ArrayList<>();
 
     public int getId() {

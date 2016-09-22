@@ -12,9 +12,11 @@ import java.io.Serializable;
 @Table(name = "activitychange")
 public class ActivityChange extends BaseModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
     @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "activity_id")
     private Activity activity = null;
 
     public int getId() {

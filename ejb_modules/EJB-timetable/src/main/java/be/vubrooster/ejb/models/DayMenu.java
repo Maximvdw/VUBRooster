@@ -11,9 +11,12 @@ import java.io.Serializable;
 @Table(name = "daymenu")
 public class DayMenu extends BaseModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+    @Column(name = "week")
     private int week = 0;
+    @Column(name = "day")
     private int day = 0;
 
     public int getId() {

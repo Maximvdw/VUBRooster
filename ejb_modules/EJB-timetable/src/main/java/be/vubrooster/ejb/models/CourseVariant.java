@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  * CourseVariant
@@ -20,16 +19,25 @@ import java.io.Serializable;
 })
 public class CourseVariant extends BaseModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+    @Column(name = "name")
     private String name = "";
     @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "course_id")
     private Course course = null;
+    @Column(name = "day")
     private String day = "";
+    @Column(name = "weeks")
     private String weeks = "";
-    private String lector = "";
+    @Column(name = "staff")
+    private String staff = "";
+    @Column(name = "classRoom")
     private String classRoom = "";
+    @Column(name = "startTime")
     private String startTime = "";
+    @Column(name = "endTime")
     private String endTime = "";
 
     public CourseVariant() {
@@ -80,12 +88,12 @@ public class CourseVariant extends BaseModel {
         this.weeks = weeks;
     }
 
-    public String getLector() {
-        return lector;
+    public String getStaff() {
+        return staff;
     }
 
-    public void setLector(String lector) {
-        this.lector = lector;
+    public void setStaff(String staff) {
+        this.staff = staff;
     }
 
     public String getClassRoom() {
@@ -123,7 +131,7 @@ public class CourseVariant extends BaseModel {
         if (course != null ? !course.equals(variant.course) : variant.course != null) return false;
         if (day != null ? !day.equals(variant.day) : variant.day != null) return false;
         if (weeks != null ? !weeks.equals(variant.weeks) : variant.weeks != null) return false;
-        if (lector != null ? !lector.equals(variant.lector) : variant.lector != null) return false;
+        if (staff != null ? !staff.equals(variant.staff) : variant.staff != null) return false;
         if (classRoom != null ? !classRoom.equals(variant.classRoom) : variant.classRoom != null) return false;
         if (startTime != null ? !startTime.equals(variant.startTime) : variant.startTime != null) return false;
         return endTime != null ? endTime.equals(variant.endTime) : variant.endTime == null;
@@ -136,7 +144,7 @@ public class CourseVariant extends BaseModel {
         result = 31 * result + (course != null ? course.hashCode() : 0);
         result = 31 * result + (day != null ? day.hashCode() : 0);
         result = 31 * result + (weeks != null ? weeks.hashCode() : 0);
-        result = 31 * result + (lector != null ? lector.hashCode() : 0);
+        result = 31 * result + (staff != null ? staff.hashCode() : 0);
         result = 31 * result + (classRoom != null ? classRoom.hashCode() : 0);
         result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
         result = 31 * result + (endTime != null ? endTime.hashCode() : 0);

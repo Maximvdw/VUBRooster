@@ -73,9 +73,10 @@ public interface StudentGroupServer {
     List<StudentGroup> saveStudentGroups(List<StudentGroup> studentGroups);
 
     /**
-     * Assign courses to groups
+     * Update student group
+     * @param group group
      */
-    void assignCoursesToGroups();
+    void updateStudentGroup(StudentGroup group);
 
     /**
      * Load student groups to cache
@@ -83,17 +84,12 @@ public interface StudentGroupServer {
     void loadStudentGroups();
 
     /**
-     * Load student groups from url
-     *
-     * @param url url to get them from
-     * @param studyProgram studyprogram the groups belong to
-     * @param faculty faculty the groups belong to
-     * @param language language
-     */
-    void loadStudentGroups(String url, StudyProgram studyProgram, Faculty faculty, Language language);
-
-    /**
      * Save all cached student groups to database
      */
     void saveStudentGroups();
+
+    /**
+     * Assign courses to groups
+     */
+    void assignCoursesToGroups();
 }

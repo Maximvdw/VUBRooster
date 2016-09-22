@@ -52,7 +52,31 @@
         </dependency>
         <dependency>
             <groupId>be.vubrooster</groupId>
+            <artifactId>EJB-user</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>ejb</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>be.vubrooster</groupId>
             <artifactId>EJB-config</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>ejb</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>be.vubrooster</groupId>
+            <artifactId>EJB-gcal</artifactId>
             <version>1.0-SNAPSHOT</version>
             <type>ejb</type>
             <exclusions>
@@ -92,8 +116,18 @@
                         </ejbModule>
                         <ejbModule>
                             <groupId>be.vubrooster</groupId>
+                            <artifactId>EJB-user</artifactId>
+                            <bundleFileName>EJB-user.jar</bundleFileName>
+                        </ejbModule>
+                        <ejbModule>
+                            <groupId>be.vubrooster</groupId>
                             <artifactId>EJB-twitter</artifactId>
                             <bundleFileName>EJB-twitter.jar</bundleFileName>
+                        </ejbModule>
+                        <ejbModule>
+                            <groupId>be.vubrooster</groupId>
+                            <artifactId>EJB-gcal</artifactId>
+                            <bundleFileName>EJB-gcal.jar</bundleFileName>
                         </ejbModule>
                         <ejbModule>
                             <groupId>be.vubrooster</groupId>

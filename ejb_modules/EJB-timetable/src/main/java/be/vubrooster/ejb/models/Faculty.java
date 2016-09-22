@@ -12,8 +12,8 @@ import java.io.Serializable;
 @Entity
 @Table(name = "faculties", indexes = {
 		@Index(name = "i1", columnList = "id", unique = true),
-		@Index(name = "i2", columnList = "nameDutch", unique = true),
-		@Index(name = "i3", columnList = "nameEnglish", unique = true),
+		@Index(name = "i2", columnList = "nameDutch", unique = false),
+		@Index(name = "i3", columnList = "nameEnglish", unique = false),
 		@Index(name = "i4", columnList = "code", unique = true),
 })
 @NamedQueries({
@@ -26,7 +26,7 @@ import java.io.Serializable;
 })
 public class Faculty extends BaseModel implements Comparable<Faculty> {
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name = "id")
 	private int id;
     @Column(name = "nameDutch")

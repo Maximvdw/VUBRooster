@@ -1,6 +1,7 @@
 package be.vubrooster.ejb;
 
 import be.vubrooster.ejb.models.Course;
+import be.vubrooster.ejb.models.CourseVariant;
 import be.vubrooster.ejb.models.Faculty;
 
 import java.util.List;
@@ -17,6 +18,12 @@ public interface CourseServer {
      * @return courses collection
      */
     List<Course> findCourses(boolean useCache);
+
+    /**
+     * Get all course variants
+     * @return course variants
+     */
+    List<CourseVariant> findCourseVariants();
 
     /**
      * Get courses count

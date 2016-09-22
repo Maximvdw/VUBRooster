@@ -15,7 +15,7 @@ import java.io.Serializable;
 })
 public class Sync implements Serializable {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	private long timeStamp = 0L;
 	private int added = 0;

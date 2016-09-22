@@ -26,5 +26,8 @@
         <class>be.vubrooster.ejb.models.StudentGroup</class>
         <class>be.vubrooster.ejb.models.Sync</class>
         <class>be.vubrooster.ejb.models.TimeTable</class>
+        <class>be.vubrooster.ejb.models.Staff</class>
+        <class>be.vubrooster.ejb.models.ClassRoom</class>
+        <class>be.vubrooster.ejb.models.User</class>
     </persistence-unit>
 </persistence>

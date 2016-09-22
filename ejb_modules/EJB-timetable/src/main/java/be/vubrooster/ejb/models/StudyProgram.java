@@ -25,12 +25,17 @@ import java.util.List;
 })
 public class StudyProgram extends BaseModel {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
 	private int id;
+    @Column(name = "name")
 	private String name = "";
+    @Column(name = "language")
 	private Language language = Language.DUTCH;
+    @Column(name = "url")
 	private String url = "";
     @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "faculty_id")
 	private Faculty faculty = null;
 
 	public StudyProgram(){

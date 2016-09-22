@@ -2,7 +2,6 @@ package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
 
 /**
  * @author Maxim Van de Wynckel
@@ -10,18 +9,18 @@ import java.sql.Date;
  */
 @MappedSuperclass
 public abstract class BaseModel implements Serializable{
-    private long syncDate = 0L;
+    private long lastSync = 0L;
     private long lastUpdate = 0L;
 
     @Transient
     private boolean dirty = false;
 
-    public long getSyncDate() {
-        return syncDate;
+    public long getLastSync() {
+        return lastSync;
     }
 
-    public void setSyncDate(long syncDate) {
-        this.syncDate = syncDate;
+    public void setLastSync(long lastSync) {
+        this.lastSync = lastSync;
     }
 
     public long getLastUpdate() {

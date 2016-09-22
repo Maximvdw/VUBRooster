@@ -1,15 +1,11 @@
 package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.CourseServer;
+import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.models.CourseVariant;
-import be.vubrooster.utils.HtmlUtils;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +15,6 @@ import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -37,10 +32,6 @@ public class CourseServerBean implements CourseServer {
     private EntityManager entityManager;
     private Session session = null;
 
-    // TODO: 2evenjr is a variable depending on the year - automate fetching
-    private String listURL = "http://splus.cumulus.vub.ac.be:1184/2evenjr/opleidingsonderdelen_evenjr.html";
-    private String baseURL = "http://splus.cumulus.vub.ac.be:1184/reporting/spreadsheet?submit=toon+de+gegevens+-+show+the+teaching+activities&idtype=name&template=Mod%2BSS&objectclass=module%2Bgroup";
-
     // Cache
     private List<Course> courseList = new ArrayList<Course>();
 
@@ -54,6 +45,12 @@ public class CourseServerBean implements CourseServer {
             // Use cache
             return courseList;
         }
+    }
+
+    @Override
+    public List<CourseVariant> findCourseVariants() {
+        Query query = getSession().getNamedQuery("findCourseVariants");
+        return query.list();
     }
 
     @Override
@@ -133,116 +130,19 @@ public class CourseServerBean implements CourseServer {
     }
 
     /**
-     * Add course to cache
-     *
-     * @param course course to add
-     */
-    private void addCourse(Course course) {
-        if (!courseList.contains(course)) {
-            course.setDirty(true);
-            course.setLastUpdate(System.currentTimeMillis() / 1000);
-            course.setSyncDate(System.currentTimeMillis() / 1000);
-            courseList.add(course);
-        }else{
-            Course existingCourse = courseList.get(courseList.indexOf(course));
-            boolean change = false;
-            for (CourseVariant variant : course.getVariations()){
-                if (!existingCourse.getVariations().contains(variant)){
-                    if (existingCourse.addVariant(variant) && !change){
-                        change = true;
-                    }
-                }
-            }
-            if (change) { // You don't know if it was dirty already
-                existingCourse.setLastUpdate(System.currentTimeMillis() / 1000);
-                existingCourse.setDirty(true);
-            }
-            existingCourse.setSyncDate(System.currentTimeMillis() / 1000);
-        }
-    }
-
-    /**
      * Load courses and put them in the cache
      */
     @Override
     public void loadCourses() {
         // Reload database
         courseList = findCourses(false);
-        List<CourseVariant> courseVariants = getSession().getNamedQuery("findCourseVariants").list();
-        for (CourseVariant courseVariant : courseVariants){
-            Course c = findCourseByName(courseVariant.getCourse().getName(),true);
-            if (!c.addVariant(courseVariant)){
-                getSession().delete(courseVariant);
-            }
-        }
 
-        try {
-            Document subjectListPage = Jsoup.parse(HtmlUtils.sendGetRequest(getListURL(), new HashMap<>()).getSource());
-            Element selectionBox = subjectListPage.getElementsByTag("select").first();
-            Elements options = selectionBox.getElementsByTag("option");
-            String url = getBaseURL();
-            // Combining the identifier allows loading one single page
-            for (int i = 0; i < options.size(); i++) {
-                Element option = options.get(i);
-                String name = option.text();
-                url += "&identifier=" + name.replace(" ", "%20");
-            }
-
-            Document subjectsPage = Jsoup.parse(HtmlUtils.sendGetRequest(url, new HashMap<>()).getSource());
-            logger.info("Parsing courses and their variation names ...");
-            Elements courseInfoTables = subjectsPage.getElementsByClass("label-1-args"); // This class contains the general name of the course
-            for (Element courseInfo : courseInfoTables) {
-                Element courseName = courseInfo.select(".label-1-0-0").first();
-
-                //String facultyCode = courseInfo.select(".label-1-0-4").first().html().split(" ")[1];
-                Course course = new Course((courseName.html()));
-                Element root = courseName.parents().get(7); // Go 8 places up
-                Element table = root.nextElementSibling(); // The next table should contain the variants of the course
-                // Check if the class of that table is correct
-                if (table.className().equals("spreadsheet")) {
-                    // Get variants
-                    Elements rows = table.getElementsByTag("tr");
-                    for (int j = 1; j < rows.size(); j++) {
-                        Elements columns = rows.get(j).getElementsByTag("td");
-                        String variantName = columns.first().html();
-                        CourseVariant variant = new CourseVariant(variantName);
-                        variant.setDay(columns.get(1).html());
-                        variant.setStartTime(columns.get(2).html());
-                        variant.setEndTime(columns.get(3).html());
-                        variant.setWeeks(columns.get(5).html());
-                        variant.setLector(columns.get(6).html());
-                        variant.setClassRoom(columns.get(7).html());
-                        course.addVariant(variant);
-                    }
-                }
-                addCourse(course);
-            }
-        } catch (Exception e) {
-            logger.error("Unable to load courses!");
-            logger.error("Retrying loading courses ...");
-            loadCourses();
-        }
+        courseList = BaseCore.getInstance().getCourseManager().loadCourses(courseList);
     }
 
     @Override
     public void saveCourses() {
         courseList = saveCourses(courseList);
-    }
-
-    public String getListURL() {
-        return listURL;
-    }
-
-    public void setListURL(String listURL) {
-        this.listURL = listURL;
-    }
-
-    public String getBaseURL() {
-        return baseURL;
-    }
-
-    public void setBaseURL(String baseURL) {
-        this.baseURL = baseURL;
     }
 
     /**

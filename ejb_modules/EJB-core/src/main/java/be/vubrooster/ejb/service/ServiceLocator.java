@@ -18,6 +18,10 @@ public class ServiceLocator {
     public static String SYNC_SERVER = "java:global/EAR-vubrooster/EJB-timetable/SyncServerBean";
     public static String CONFIGURATION_SERVER = "java:global/EAR-vubrooster/EJB-config/ConfigurationServerBean";
     public static String TWITTER_SERVER = "java:global/EAR-vubrooster/EJB-twitter/TwitterServerBean";
+    public static String USER_SERVER = "java:global/EAR-vubrooster/EJB-user/UserServerBean";
+    public static String GCAL_SERVER = "java:global/EAR-vubrooster/EJB-gcal/GoogleCalendarServerBean";
+    public static String CLASSROOM_SERVER = "java:global/EAR-vubrooster/EJB-timetable/ClassRoomServerBean";
+    public static String STAFF_SERVER = "java:global/EAR-vubrooster/EJB-timetable/StaffServerBean";
 
     public static Object doLookup(String name){
         try {

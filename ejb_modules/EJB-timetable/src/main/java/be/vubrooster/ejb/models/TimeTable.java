@@ -15,7 +15,7 @@ import java.io.Serializable;
 })
 public class TimeTable implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private long startTimeStamp = 0;
     private long lastSync = 0;

@@ -2,6 +2,9 @@ package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.*;
 import be.vubrooster.ejb.enums.SyncState;
+import be.vubrooster.ejb.managers.BaseCore;
+import be.vubrooster.ejb.managers.EHBRooster;
+import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.models.Sync;
 import be.vubrooster.ejb.models.TimeTable;
 import be.vubrooster.ejb.schedulers.SchedulerManager;
@@ -40,6 +43,8 @@ public class TimeTableServerBean implements TimeTableServer {
     private EntityManager entityManager;
     private Session session = null;
 
+    private BaseCore baseCore = null;
+
     // Cache
     private TimeTable currentTimeTable = null;
 
@@ -52,6 +57,8 @@ public class TimeTableServerBean implements TimeTableServer {
         logger.info(" VUBRooster Converter v1.0");
         logger.info(" (c) Maxim Van de Wynckel 2015-2016");
         logger.info("=====================================");
+
+        baseCore = new VUBRooster();
 
         // Load configuration
         ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();
@@ -68,9 +75,9 @@ public class TimeTableServerBean implements TimeTableServer {
         if (getCurrentTimeTable() == null) {
             logger.info("No previous sync found! Starting as new installation ...");
             currentTimeTable = new TimeTable();
-            twitterServer.postStatus("[" + (System.currentTimeMillis() / 1000 ) + "] Started VUBRooster application (Fresh database)");
+            twitterServer.postStatus("[" + (System.currentTimeMillis() / 1000 ) + "] Started application (Fresh database)");
         }else{
-            twitterServer.postStatus("[" + (System.currentTimeMillis() / 1000 ) + "] Started VUBRooster application");
+            twitterServer.postStatus("[" + (System.currentTimeMillis() / 1000 ) + "] Started application");
         }
         logger.info("Loading faculities ...");
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
@@ -103,25 +110,7 @@ public class TimeTableServerBean implements TimeTableServer {
         syncState = SyncState.RUNNING;
 
 
-        logger.info("Loading study programmes ...");
-        StudyProgramServer studyProgramServer = ServiceProvider.getStudyProgramServer();
-        StudentGroupServer studentGroupServer = ServiceProvider.getStudentGroupServer();
-        studentGroupServer.loadStudentGroups();
-        studyProgramServer.loadStudyProgrammes();
-        logger.info("Saving study programmes to database ...");
-        studyProgramServer.saveStudyProgrammes();
-        logger.info("Saving student groups to database ...");
-        studentGroupServer.saveStudentGroups();
-
-        logger.info("Loading courses ...");
-        CourseServer courseServer = ServiceProvider.getCourseServer();
-        courseServer.loadCourses();
-        logger.info("Saving courses to database ...");
-        courseServer.saveCourses();
-        logger.info("Loading timetables for all student groups ...");
-        ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
-        activitiyServer.loadActivities();
-        studentGroupServer.assignCoursesToGroups();
+        getBaseCore().sync();
 
         // End the sync
         long syncEndTime = System.currentTimeMillis();
@@ -130,7 +119,7 @@ public class TimeTableServerBean implements TimeTableServer {
         logger.info("Synchronisation completed in " + sync.getDuration() + "ms!");
 
         logger.info("Saving activities to database ...");
-        activitiyServer.saveActivities(sync);
+        ServiceProvider.getActivitiyServer().saveActivities(sync);
         logger.info("Timetables saved to database! Waiting for next sync ...");
 
         // Timeout for next sync
@@ -189,5 +178,13 @@ public class TimeTableServerBean implements TimeTableServer {
      */
     public void setEntityManager(EntityManager em) {
         this.entityManager = em;
+    }
+
+    public BaseCore getBaseCore() {
+        return baseCore;
+    }
+
+    public void setBaseCore(BaseCore baseCore) {
+        this.baseCore = baseCore;
     }
 }

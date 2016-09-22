@@ -20,6 +20,8 @@ public class ServiceProvider {
     private static TimeTableServer timeTableServer;
     private static ConfigurationServer configurationServer;
     private static TwitterServer twitterServer;
+    private static StaffServer staffServer;
+    private static ClassRoomServer classRoomServer;
 
     /**
      * Get the commons server
@@ -140,4 +142,27 @@ public class ServiceProvider {
         }
         return twitterServer;
     }
+
+    /**
+     * Get the staff server
+     * @return staff server
+     */
+    public static StaffServer getStaffServer() {
+        if (staffServer == null) {
+            staffServer = (StaffServer) ServiceLocator.doLookup(ServiceLocator.STAFF_SERVER);
+        }
+        return staffServer;
+    }
+
+    /**
+     * Get the class room server
+     * @return class room server
+     */
+    public static ClassRoomServer getClassRoomServer() {
+        if (classRoomServer == null) {
+            classRoomServer = (ClassRoomServer) ServiceLocator.doLookup(ServiceLocator.CLASSROOM_SERVER);
+        }
+        return classRoomServer;
+    }
+
 }

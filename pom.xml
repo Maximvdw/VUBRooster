@@ -13,6 +13,8 @@
         <module>ejb_modules/EJB-config</module>
         <module>ejb_modules/EJB-timetable</module>
         <module>ejb_modules/EJB-twitter</module>
+        <module>ejb_modules/EJB-user</module>
+        <module>ejb_modules/EJB-gcal</module>
 
         <module>ejb_modules/EAR-vubrooster</module>
     </modules>

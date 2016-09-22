@@ -42,8 +42,10 @@
     <orderEntry type="module" module-name="JAVA-utils" />
     <orderEntry type="module" module-name="EJB-twitter" />
     <orderEntry type="library" name="Maven: org.twitter4j:twitter4j-core:4.0.5" level="project" />
+    <orderEntry type="module" module-name="EJB-user" />
     <orderEntry type="module" module-name="EJB-config" />
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.17" level="project" />
+    <orderEntry type="module" module-name="EJB-gcal" />
     <orderEntry type="module" module-name="EJB-persistence" />
   </component>
 </module>

@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +12,9 @@ import java.util.List;
 @Entity
 @Table(name = "courses", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "name", unique = true),
+        @Index(name = "i2", columnList = "name", unique = false),
+        @Index(name = "i3", columnList = "splusId", unique = true),
+        @Index(name = "i4", columnList = "longName", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findCourses",
@@ -23,9 +24,15 @@ import java.util.List;
 })
 public class Course extends BaseModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+    @Column(name = "name")
     private String name = "";
+    @Column(name = "longName")
+    private String longName = "";
+    @Column(name = "splusId")
+    private String splusId = "";
     @Transient
     private List<CourseVariant> variations = new ArrayList<CourseVariant>();
 
@@ -33,8 +40,14 @@ public class Course extends BaseModel {
 
     }
 
+    public Course(String name, String splusId){
+        setName(name);
+        setSplusId(splusId);
+    }
+
     public Course(String name){
         setName(name);
+        setSplusId(name);
     }
 
     public String getName() {
@@ -58,7 +71,7 @@ public class Course extends BaseModel {
             variant.setCourse(this);
             variant.setDirty(true);
             variant.setLastUpdate(System.currentTimeMillis() / 1000);
-            variant.setSyncDate(System.currentTimeMillis() / 1000);
+            variant.setLastSync(System.currentTimeMillis() / 1000);
             variations.add(variant);
             return true;
         }
@@ -80,12 +93,28 @@ public class Course extends BaseModel {
 
         Course course = (Course) o;
 
-        return name != null ? name.equalsIgnoreCase(course.name) : course.name == null;
+        return splusId != null ? splusId.equalsIgnoreCase(course.splusId) : course.splusId == null;
 
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return splusId != null ? splusId.hashCode() : 0;
+    }
+
+    public String getSplusId() {
+        return splusId;
+    }
+
+    public void setSplusId(String splusId) {
+        this.splusId = splusId;
+    }
+
+    public String getLongName() {
+        return longName;
+    }
+
+    public void setLongName(String longName) {
+        this.longName = longName;
     }
 }
