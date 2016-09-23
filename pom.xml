@@ -16,6 +16,8 @@
         <module>ejb_modules/EJB-user</module>
         <module>ejb_modules/EJB-gcal</module>
 
+        <module>web_modules/WEB-api-user</module>
+
         <module>ejb_modules/EAR-vubrooster</module>
     </modules>
     <name>VUB Rooster Converter</name>
@@ -37,6 +39,21 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-calendar</artifactId>
+                <version>v3-rev213-1.22.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.7</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.api-client</groupId>
+                <artifactId>google-api-client-gson</artifactId>
+                <version>1.22.0</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>

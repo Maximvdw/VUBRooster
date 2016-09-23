@@ -8,24 +8,33 @@ import javax.persistence.*;
  * Created by maxim on 21-Sep-16.
  */
 @Entity
-@Cacheable(true)
+@Cacheable()
 @Table(name = "classrooms", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
+        @Index(name = "i2", columnList = "splusId", unique = true),
 })
 @NamedQueries({
         @NamedQuery(name = "findClassRooms",
                 query = "SELECT c FROM ClassRoom c"),
 })
-public class ClassRoom extends BaseModel {
+public class ClassRoom extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
     @Column(name = "name")
     private String name = "";
+    @Column(name = "splusId")
+    private String splusId = "";
 
     public ClassRoom(String name) {
         setName(name);
+        setSplusId(name);
+    }
+
+    public ClassRoom(String name, String splusId){
+        setName(name);
+        setSplusId(splusId);
     }
 
     public ClassRoom() {
@@ -48,6 +57,14 @@ public class ClassRoom extends BaseModel {
         this.name = name;
     }
 
+    public String getSplusId() {
+        return splusId;
+    }
+
+    public void setSplusId(String splusId) {
+        this.splusId = splusId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -55,12 +72,12 @@ public class ClassRoom extends BaseModel {
 
         ClassRoom classRoom = (ClassRoom) o;
 
-        return name != null ? name.equals(classRoom.name) : classRoom.name == null;
+        return splusId != null ? splusId.equals(classRoom.splusId) : classRoom.splusId == null;
 
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return splusId != null ? splusId.hashCode() : 0;
     }
 }

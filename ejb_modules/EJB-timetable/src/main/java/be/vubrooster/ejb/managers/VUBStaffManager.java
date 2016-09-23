@@ -2,7 +2,7 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.StaffServer;
 import be.vubrooster.ejb.models.Activity;
-import be.vubrooster.ejb.models.Staff;
+import be.vubrooster.ejb.models.StaffMember;
 import be.vubrooster.ejb.service.ServiceProvider;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public class VUBStaffManager extends StaffManager{
     }
 
     @Override
-    public List<Staff> loadStaff(List<Staff> staffList) {
+    public List<StaffMember> loadStaff(List<StaffMember> staffList) {
         super.loadStaff(staffList);
         List<Activity> activityList = ServiceProvider.getActivitiyServer().findActivities(true);
         for (Activity activity : activityList){
@@ -26,12 +26,12 @@ public class VUBStaffManager extends StaffManager{
                     // Multiple teachers
                     String[] teachers = activity.getStaff().split(",");
                     for (String teacher : teachers) {
-                        Staff staff = new Staff(teacher);
+                        StaffMember staff = new StaffMember(teacher);
                         addStaff(staff);
                     }
                 } else {
                     // Only one teacher
-                    Staff staff = new Staff(activity.getStaff());
+                    StaffMember staff = new StaffMember(activity.getStaff());
                     addStaff(staff);
                 }
             }

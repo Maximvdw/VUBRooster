@@ -16,21 +16,29 @@ import java.util.List;
         @NamedQuery(name = "findUsers",
                 query = "SELECT u FROM User u"),
 })
-public class User extends BaseModel{
+public class User extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
     @Column(name = "firstName")
     private String firstName = "";
-    @Column(name = "lastName")
-    private String lastName = "";
+    @Column(name = "surName")
+    private String surName = "";
     @Column(name = "email")
     private String email = "";
-    @Column(name = "privateKey")
-    private String privateKey = "";
     @Column(name = "publicKey")
     private String publicKey = "";
+    @Column(name = "googleId")
+    private String googleId = "";
+    @Column(name = "googlePictureLink")
+    private String googlePictureLink = "";
+    @Column(name = "accessToken")
+    private String accessToken = "";
+    @Column(name = "refreshToken")
+    private String refreshToken = "";
+    @Column(name = "defaultTimetable")
+    private String defaultTimetable = "";
     @ManyToMany(cascade = CascadeType.DETACH)
     @JoinTable(name = "user_studentgroups",
             joinColumns=
@@ -80,12 +88,28 @@ public class User extends BaseModel{
         this.email = email;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getPublicKey() {
+        return publicKey;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public String getGooglePictureLink() {
+        return googlePictureLink;
+    }
+
+    public void setGooglePictureLink(String googlePictureLink) {
+        this.googlePictureLink = googlePictureLink;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     public String getFirstName() {
@@ -96,19 +120,35 @@ public class User extends BaseModel{
         this.firstName = firstName;
     }
 
-    public String getPrivateKey() {
-        return privateKey;
+    public String getSurName() {
+        return surName;
     }
 
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
+    public void setSurName(String surName) {
+        this.surName = surName;
     }
 
-    public String getPublicKey() {
-        return publicKey;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public String getDefaultTimetable() {
+        return defaultTimetable;
+    }
+
+    public void setDefaultTimetable(String defaultTimetable) {
+        this.defaultTimetable = defaultTimetable;
     }
 }

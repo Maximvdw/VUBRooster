@@ -22,7 +22,7 @@ import java.util.List;
         @NamedQuery(name = "findCourseById", query = "SELECT c FROM Course c WHERE c.id = :id"),
         @NamedQuery(name = "findCourseByName", query = "SELECT c FROM Course c WHERE c.name = :name"),
 })
-public class Course extends BaseModel {
+public class Course extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

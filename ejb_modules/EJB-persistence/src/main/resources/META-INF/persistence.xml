@@ -15,7 +15,7 @@
             <property name="hibernate.format_sql" value="false"/>
         </properties>
 
-        <class>be.vubrooster.ejb.models.BaseModel</class>
+        <class>be.vubrooster.ejb.models.BaseSyncModel</class>
         <class>be.vubrooster.ejb.models.Activity</class>
         <class>be.vubrooster.ejb.models.ActivityChange</class>
         <class>be.vubrooster.ejb.models.Course</class>
@@ -26,7 +26,7 @@
         <class>be.vubrooster.ejb.models.StudentGroup</class>
         <class>be.vubrooster.ejb.models.Sync</class>
         <class>be.vubrooster.ejb.models.TimeTable</class>
-        <class>be.vubrooster.ejb.models.Staff</class>
+        <class>be.vubrooster.ejb.models.StaffMember</class>
         <class>be.vubrooster.ejb.models.ClassRoom</class>
         <class>be.vubrooster.ejb.models.User</class>
     </persistence-unit>

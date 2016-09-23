@@ -4,6 +4,7 @@ import be.vubrooster.ejb.models.Activity;
 import be.vubrooster.ejb.models.Sync;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * ActivityServer
@@ -75,7 +76,26 @@ public interface ActivitiyServer {
     void saveActivities(Sync sync);
 
     /**
-     * Load all activities to cache
+     * Load activities for groups
+     * @return future
      */
-    void loadActivities();
+    Future loadActivitiesForGroups(boolean reloadData);
+
+    /**
+     * Load acitivites for staff
+     * @return future
+     */
+    Future loadActivitiesForStaff(boolean reloadData);
+
+    /**
+     * Load activities for classrooms
+     * @return future
+     */
+    Future loadActivitiesForClassRooms(boolean reloadData);
+
+    /**
+     * Load activities for courses
+     * @return future
+     */
+    Future loadActivitiesForCourses(boolean reloadData);
 }

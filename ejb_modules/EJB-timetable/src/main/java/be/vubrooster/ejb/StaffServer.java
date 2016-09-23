@@ -1,6 +1,6 @@
 package be.vubrooster.ejb;
 
-import be.vubrooster.ejb.models.Staff;
+import be.vubrooster.ejb.models.StaffMember;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public interface StaffServer {
      * @param useCache use cache
      * @return list of staff
      */
-    List<Staff> findStaff(boolean useCache);
+    List<StaffMember> findStaff(boolean useCache);
 
     /**
      * Load staff
@@ -32,5 +32,5 @@ public interface StaffServer {
      * @param staffList staff list
      * @return list of staff
      */
-    List<Staff> saveStaff(List<Staff> staffList);
+    List<StaffMember> saveStaff(List<StaffMember> staffList);
 }

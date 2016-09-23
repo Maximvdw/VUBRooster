@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +23,7 @@ import java.util.List;
         @NamedQuery(name = "findStudentGroupBySplusId", query = "SELECT sg FROM StudentGroup sg WHERE sg.splusId = :splusId"),
         @NamedQuery(name = "findStudentGroupByName", query = "SELECT sg FROM StudentGroup sg WHERE sg.name = :name"),
 })
-public class StudentGroup extends BaseModel{
+public class StudentGroup extends BaseSyncModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

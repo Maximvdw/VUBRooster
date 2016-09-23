@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  * Faculty
@@ -24,7 +23,7 @@ import java.io.Serializable;
 		@NamedQuery(name = "findFacultyByDutchName", query = "SELECT f FROM Faculty f WHERE f.nameDutch = :name"),
 		@NamedQuery(name = "findFacultyByEnglishName", query = "SELECT f FROM Faculty f WHERE f.nameEnglish = :name"),
 })
-public class Faculty extends BaseModel implements Comparable<Faculty> {
+public class Faculty extends BaseSyncModel implements Comparable<Faculty> {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name = "id")

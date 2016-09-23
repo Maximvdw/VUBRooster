@@ -2,7 +2,7 @@ package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.StaffServer;
 import be.vubrooster.ejb.managers.BaseCore;
-import be.vubrooster.ejb.models.Staff;
+import be.vubrooster.ejb.models.StaffMember;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -33,10 +33,10 @@ public class StaffServerBean implements StaffServer{
     private Session session = null;
 
     // Cache
-    private List<Staff> staffList = new ArrayList<>();
+    private List<StaffMember> staffList = new ArrayList<>();
 
     @Override
-    public List<Staff> findStaff(boolean useCache) {
+    public List<StaffMember> findStaff(boolean useCache) {
         if (staffList.isEmpty() || !useCache) {
             // Perform query
             Query query = getSession().getNamedQuery("findStaff");
@@ -61,10 +61,10 @@ public class StaffServerBean implements StaffServer{
     }
 
     @Override
-    public List<Staff> saveStaff(List<Staff> staffList) {
-        List<Staff> savedStaff = new ArrayList<>();
-        for (Staff staff : staffList){
-            savedStaff.add((Staff) getSession().merge(staff));
+    public List<StaffMember> saveStaff(List<StaffMember> staffList) {
+        List<StaffMember> savedStaff = new ArrayList<>();
+        for (StaffMember staff : staffList){
+            savedStaff.add((StaffMember) getSession().merge(staff));
         }
         return savedStaff;
     }

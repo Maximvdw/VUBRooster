@@ -6,6 +6,8 @@ import be.vubrooster.ejb.service.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.Future;
+
 /**
  * VUBRooster
  *
@@ -46,7 +48,14 @@ public class VUBRooster extends BaseCore{
         courseServer.saveCourses();
         logger.info("Loading timetables for all student groups ...");
         ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
-        activitiyServer.loadActivities();
+        Future<Void> activityLoadFuture = activitiyServer.loadActivitiesForGroups(true);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         logger.info("Assigning courses to groups ...");
         studentGroupServer.assignCoursesToGroups();
         logger.info("Extracting staff members from activities ...");
@@ -59,5 +68,24 @@ public class VUBRooster extends BaseCore{
         classRoomServer.loadClassRooms();;
         logger.info("Saving classrooms to database ...");
         classRoomServer.saveClassRooms();
+        logger.info("Loading timetables for all extracted teachers ...");
+        activityLoadFuture = activitiyServer.loadActivitiesForStaff(false);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public long getSyncTimeout() {
+        return 0;
+    }
+
+    @Override
+    public long getSyncInterval() {
+        return 0;
     }
 }

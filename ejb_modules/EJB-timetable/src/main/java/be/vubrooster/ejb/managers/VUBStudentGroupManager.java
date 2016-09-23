@@ -95,6 +95,11 @@ public class VUBStudentGroupManager extends StudentGroupManager{
             }
             logger.error("Unable to get student groups '" + language.name() + "' for study program: "
                     + studyProgram.getName() + " [" + faculty.getCode() + "]");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
             logger.error("Retrying getting student groups ...");
             loadStudentGroups(url, studyProgram, faculty, language);
         }

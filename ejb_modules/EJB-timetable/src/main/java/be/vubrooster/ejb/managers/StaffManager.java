@@ -1,7 +1,7 @@
 package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.StaffServer;
-import be.vubrooster.ejb.models.Staff;
+import be.vubrooster.ejb.models.StaffMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ public class StaffManager {
     // Servers
     public StaffServer staffServer = null;
     // Cache
-    public List<Staff> staffList = new ArrayList<>();
+    public List<StaffMember> staffList = new ArrayList<>();
 
     public StaffManager(StaffServer server){
         staffServer = server;
@@ -29,7 +29,7 @@ public class StaffManager {
      * @param staffList
      * @return
      */
-    public List<Staff> loadStaff(List<Staff> staffList){
+    public List<StaffMember> loadStaff(List<StaffMember> staffList){
         this.staffList = staffList;
 
         return staffList;
@@ -40,7 +40,7 @@ public class StaffManager {
      *
      * @param staff staff to add
      */
-    public Staff addStaff(Staff staff) {
+    public StaffMember addStaff(StaffMember staff) {
         if (!staffList.contains(staff)) {
             staff.setDirty(true);
             staff.setLastUpdate(System.currentTimeMillis() / 1000);
@@ -48,7 +48,7 @@ public class StaffManager {
             staffList.add(staff);
             return staff;
         }else{
-            Staff existingStaff = staffList.get(staffList.indexOf(staff));
+            StaffMember existingStaff = staffList.get(staffList.indexOf(staff));
             existingStaff.setLastSync(System.currentTimeMillis() / 1000);
             return existingStaff;
         }
@@ -58,7 +58,7 @@ public class StaffManager {
      * Get staff list
      * @return staff
      */
-    public List<Staff> getStaffList(){
+    public List<StaffMember> getStaffList(){
         return staffList;
     }
 }

@@ -1,9 +1,7 @@
 package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.ClassRoomServer;
-import be.vubrooster.ejb.StaffServer;
 import be.vubrooster.ejb.models.ClassRoom;
-import be.vubrooster.ejb.models.Staff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

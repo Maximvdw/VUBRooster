@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  * ActivityChange
@@ -10,7 +9,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "activitychange")
-public class ActivityChange extends BaseModel {
+public class ActivityChange extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

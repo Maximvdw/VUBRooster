@@ -3,9 +3,6 @@ package be.vubrooster.ejb.models;
 import be.vubrooster.ejb.enums.Language;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Study program
@@ -23,7 +20,7 @@ import java.util.List;
 		@NamedQuery(name = "findStudyProgramById", query = "SELECT sp FROM StudyProgram sp WHERE sp.id = :id"),
 		@NamedQuery(name = "findStudyProgramByName", query = "SELECT sp FROM StudyProgram sp WHERE sp.name = :name"),
 })
-public class StudyProgram extends BaseModel {
+public class StudyProgram extends BaseSyncModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

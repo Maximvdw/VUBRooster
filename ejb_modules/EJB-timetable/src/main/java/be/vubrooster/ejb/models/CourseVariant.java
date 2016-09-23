@@ -17,7 +17,7 @@ import javax.persistence.*;
         @NamedQuery(name = "findCourseVariants",
                 query = "SELECT c FROM CourseVariant c"),
 })
-public class CourseVariant extends BaseModel {
+public class CourseVariant extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

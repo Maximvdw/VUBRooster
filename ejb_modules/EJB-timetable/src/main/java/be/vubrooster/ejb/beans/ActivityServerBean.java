@@ -12,13 +12,16 @@ import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import javax.annotation.PostConstruct;
+import javax.ejb.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * ActivityServerBean
@@ -38,6 +41,13 @@ public class ActivityServerBean implements ActivitiyServer {
 
     // Cache
     private List<Activity> activityList = new ArrayList<>();
+
+    private final ExecutorService pool = Executors.newFixedThreadPool(10);
+
+    @PostConstruct
+    public void init() {
+
+    }
 
     @Override
     public List<Activity> findActivities(boolean useCache) {
@@ -85,7 +95,7 @@ public class ActivityServerBean implements ActivitiyServer {
     }
 
     @Override
-    public List<Activity> saveActivities(List<Activity> activities, Sync sync) {
+    public synchronized List<Activity> saveActivities(List<Activity> activities, Sync sync) {
         TimeTableServer timeTableServer = ServiceProvider.getTimeTableServer();
         TimeTable currentTimeTable = timeTableServer.getCurrentTimeTable();
 
@@ -144,19 +154,76 @@ public class ActivityServerBean implements ActivitiyServer {
 
     @Override
     public void saveActivities() {
-        activityList = saveActivities(activityList,null);
+        activityList = saveActivities(activityList, null);
     }
 
     @Override
     public void saveActivities(Sync sync) {
-        activityList = saveActivities(activityList,sync);
+        activityList = saveActivities(activityList, sync);
     }
 
-    public void loadActivities() {
-        // Reload database
-        activityList = findActivities(false);
+    @Asynchronous
+    @AccessTimeout(-1)
+    public Future<Void> loadActivitiesForCourses(boolean reloadData) {
+        return pool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Reload database
+                if (reloadData)
+                    activityList = findActivities(false);
 
-        activityList = BaseCore.getInstance().getActivityManager().loadActivities(activityList);
+                activityList = BaseCore.getInstance().getActivityManager().loadActivitiesForCourses(activityList);
+                return null;
+            }
+        });
+    }
+
+    @Asynchronous
+    @AccessTimeout(-1)
+    public Future<Void> loadActivitiesForGroups(boolean reloadData) {
+        return pool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Reload database
+                if (reloadData)
+                    activityList = findActivities(false);
+
+                activityList = BaseCore.getInstance().getActivityManager().loadActivitiesForGroups(activityList);
+                return null;
+            }
+        });
+    }
+
+    @Asynchronous
+    @AccessTimeout(-1)
+    public Future<Void> loadActivitiesForStaff(boolean reloadData) {
+        return pool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Reload database
+                if (reloadData)
+                    activityList = findActivities(false);
+
+                activityList = BaseCore.getInstance().getActivityManager().loadActivitiesForStaff(activityList);
+                return null;
+            }
+        });
+    }
+
+    @Asynchronous
+    @AccessTimeout(-1)
+    public Future<Void> loadActivitiesForClassRooms(boolean reloadData) {
+        return pool.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Reload database
+                if (reloadData)
+                    activityList = findActivities(false);
+
+                activityList = BaseCore.getInstance().getActivityManager().loadActivitiesForClassRooms(activityList);
+                return null;
+            }
+        });
     }
 
     /**

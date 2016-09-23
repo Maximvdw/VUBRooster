@@ -25,7 +25,7 @@ import java.util.List;
                 query = "SELECT a FROM Activity a"),
         @NamedQuery(name = "findActivityById", query = "SELECT a FROM Activity a WHERE a.id = :id"),
 })
-public class Activity extends BaseModel{
+public class Activity extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -50,6 +50,8 @@ public class Activity extends BaseModel{
     private int week = 0;
     @Column(name = "weeksLabel")
     private String weeksLabel = "";
+    @Column(name = "lessonForm")
+    private String lessonForm = "";
     @Column(name = "beginTime")
     private String beginTime = "";
     @Column(name = "beginTimeUnix")
@@ -230,5 +232,13 @@ public class Activity extends BaseModel{
         result = 31 * result + (int) (endTimeUnix ^ (endTimeUnix >>> 32));
         result = 31 * result + day;
         return result;
+    }
+
+    public String getLessonForm() {
+        return lessonForm;
+    }
+
+    public void setLessonForm(String lessonForm) {
+        this.lessonForm = lessonForm;
     }
 }

@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  * DayMenu
@@ -9,7 +8,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "daymenu")
-public class DayMenu extends BaseModel {
+public class DayMenu extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

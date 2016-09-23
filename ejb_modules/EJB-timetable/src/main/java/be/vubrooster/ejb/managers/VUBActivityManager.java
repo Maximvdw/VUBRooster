@@ -19,18 +19,24 @@ import java.util.*;
  * VUBActivityManager
  * Created by maxim on 21-Sep-16.
  */
-public class VUBActivityManager extends ActivityManager{
+public class VUBActivityManager extends ActivityManager {
     private String baseURL = "http://splus.cumulus.vub.ac.be:1184/reporting/individual?periods2=3-27&idtype=name&weeks=1-52&days=1-7&periods=3-31";
 
     private SimpleDateFormat formatter = new SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("NL"));
+
+    private enum TimeTableType{
+        STUDENT_INDIVIDUAL,
+        STUDENT_GROUPED,
+        STAFF
+    }
 
     public VUBActivityManager(ActivitiyServer server) {
         super(server);
     }
 
     @Override
-    public List<Activity> loadActivities(List<Activity> activityList) {
-        super.loadActivities(activityList);
+    public List<Activity> loadActivitiesForGroups(List<Activity> activityList) {
+        super.loadActivitiesForGroups(activityList);
 
         TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         // Set GMT timezone to avoid problems with daylight savings
@@ -59,15 +65,14 @@ public class VUBActivityManager extends ActivityManager{
         int queryPart = 0;
         int groupSize = 0;
         List<StudentGroup> groups = new ArrayList<>();
-        StudentGroupServer studentGroupServer = ServiceProvider.getStudentGroupServer();
-        splitStudentGroups(individualGroups, studentGroupServer, groups, groupSize, maxQuerySize, queryGroups, queryPart);
+        splitStudentGroups(individualGroups, groups, groupSize, maxQuerySize, queryGroups, queryPart);
         if (groups.size() != 0) {
             queryGroups.put(queryPart, new ArrayList<>(groups));
             queryPart++;
         }
         groupSize = 0;
         groups.clear();
-        splitStudentGroups(groupedGroups, studentGroupServer, groups, groupSize, maxQuerySize, queryGroups, queryPart);
+        splitStudentGroups(groupedGroups, groups, groupSize, maxQuerySize, queryGroups, queryPart);
         if (groups.size() != 0) {
             queryGroups.put(queryPart, new ArrayList<>(groups));
             groups.clear();
@@ -78,7 +83,7 @@ public class VUBActivityManager extends ActivityManager{
         for (final Map.Entry<Integer, List<StudentGroup>> queryGroup : queryGroups.entrySet()) {
             Thread th = new Thread(() -> {
                 logger.info("Fetching timetables: " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
-                fetchTimeTable(queryGroup, currentTimeTable);
+                fetchGroupTimeTable(queryGroup, currentTimeTable);
             });
             th.start();
             threadPool.add(th);
@@ -90,9 +95,8 @@ public class VUBActivityManager extends ActivityManager{
             if (threadPool.size() >= 2) {
                 while (threadPool.size() > 1) {
                     List<Thread> shadedThreadPool = new ArrayList<Thread>(threadPool);
-                    for (Thread thread : shadedThreadPool){
-                        if (!thread.isAlive())
-                        {
+                    for (Thread thread : shadedThreadPool) {
+                        if (!thread.isAlive()) {
                             threadPool.remove(thread);
                         }
                     }
@@ -103,14 +107,78 @@ public class VUBActivityManager extends ActivityManager{
         while (threadPool.size() != 0) {
             // Wait
             List<Thread> shadedThreadPool = new ArrayList<Thread>(threadPool);
-            for (Thread thread : shadedThreadPool){
-                if (!thread.isAlive())
-                {
+            for (Thread thread : shadedThreadPool) {
+                if (!thread.isAlive()) {
                     threadPool.remove(thread);
                 }
             }
         }
         ServiceProvider.getTimeTableServer().updateTimeTable(currentTimeTable);
+        return getActivityList();
+    }
+
+    @Override
+    public List<Activity> loadActivitiesForStaff(List<Activity> activityList) {
+        super.loadActivitiesForStaff(activityList);
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+        // Set GMT timezone to avoid problems with daylight savings
+        // Clients/frontends should deal with this depending on their location
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        List<StaffMember> staffMembers = ServiceProvider.getStaffServer().findStaff(true);
+        int maxQuerySize = 50;
+        final Map<Integer, List<StaffMember>> queryGroups = new TreeMap<>();
+        splitStaffMembers(staffMembers, maxQuerySize, queryGroups);
+
+        // Create a thread pool
+        List<Thread> threadPool = new ArrayList<>();
+        for (final Map.Entry<Integer, List<StaffMember>> queryGroup : queryGroups.entrySet()) {
+            Thread th = new Thread(() -> {
+                logger.info("Fetching staff timetables: " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
+                fetchStaffTimeTable(queryGroup, currentTimeTable);
+            });
+            th.start();
+            threadPool.add(th);
+            try {
+                Thread.sleep(100); // Prevent quick thread starting/connections to server
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (threadPool.size() >= 2) {
+                while (threadPool.size() > 1) {
+                    List<Thread> shadedThreadPool = new ArrayList<Thread>(threadPool);
+                    for (Thread thread : shadedThreadPool) {
+                        if (!thread.isAlive()) {
+                            threadPool.remove(thread);
+                        }
+                    }
+                }
+            }
+        }
+
+        while (threadPool.size() != 0) {
+            // Wait
+            List<Thread> shadedThreadPool = new ArrayList<Thread>(threadPool);
+            for (Thread thread : shadedThreadPool) {
+                if (!thread.isAlive()) {
+                    threadPool.remove(thread);
+                }
+            }
+        }
+
+        return getActivityList();
+    }
+
+    @Override
+    public List<Activity> loadActivitiesForClassRooms(List<Activity> activityList) {
+        super.loadActivitiesForClassRooms(activityList);
+
+        return getActivityList();
+    }
+
+    @Override
+    public List<Activity> loadActivitiesForCourses(List<Activity> activityList) {
+        super.loadActivitiesForCourses(activityList);
 
         return getActivityList();
     }
@@ -119,14 +187,13 @@ public class VUBActivityManager extends ActivityManager{
      * Split student groups in equal groups
      *
      * @param filteredGroups
-     * @param studentGroupServer
      * @param groups
      * @param groupSize
      * @param maxQuerySize
      * @param queryGroups
      * @param queryPart
      */
-    private void splitStudentGroups(List<StudentGroup> filteredGroups, StudentGroupServer studentGroupServer, List<StudentGroup> groups, int groupSize, int maxQuerySize, Map<Integer, List<StudentGroup>> queryGroups, int queryPart) {
+    private void splitStudentGroups(List<StudentGroup> filteredGroups, List<StudentGroup> groups, int groupSize, int maxQuerySize, Map<Integer, List<StudentGroup>> queryGroups, int queryPart) {
         for (StudentGroup group : filteredGroups) {
             groups.add(group);
             groupSize++;
@@ -139,7 +206,63 @@ public class VUBActivityManager extends ActivityManager{
         }
     }
 
-    private void fetchTimeTable(Map.Entry<Integer, List<StudentGroup>> queryGroup, TimeTable currentTimeTable) {
+    private void splitStaffMembers(List<StaffMember> filteredStaffMembers, int maxQuerySize, Map<Integer, List<StaffMember>> queryGroups) {
+        List<StaffMember> staffMembers = new ArrayList<>();
+        int queryPart = 0;
+        for (StaffMember staffMember : filteredStaffMembers) {
+            staffMembers.add(staffMember);
+            if (staffMembers.size() > maxQuerySize) {
+                queryGroups.put(queryPart, new ArrayList<>(staffMembers));
+                queryPart++;
+                staffMembers.clear();
+            }
+        }
+    }
+
+    private void fetchStaffTimeTable(Map.Entry<Integer, List<StaffMember>> queryGroup, TimeTable currentTimeTable) {
+        try {
+            String timetableURL = baseURL;
+            for (StaffMember staffMember : queryGroup.getValue()) {
+                timetableURL += "&identifier=" + staffMember.getSplusId().replace(" ", "%20");
+            }
+            timetableURL += "&template=Staff%2BIndividual&objectclass=staff";
+            Document timetablePage = Jsoup.parse(HtmlUtils.sendGetRequest(timetableURL, new HashMap<>(), 25000).getSource());
+
+            int i = 0;
+            Elements staffNames = timetablePage.select(".header-1-0-2");
+            for (Element staffName : staffNames) {
+                // Find the group by name
+                // Its possible that they are:
+                // 1) Not in order
+                // 2) Not exist
+                StaffMember member = null;
+                for (StaffMember m : queryGroup.getValue()) {
+                    if (m.getName().equalsIgnoreCase(staffName.html())) {
+                        member = m;
+                        break;
+                    }
+                }
+                if (member != null) {
+                    Element table = timetablePage.select(".grid-border-args").get(i); // Get the table element
+                    i++;
+                    parseTimeTable(member, table, currentTimeTable);
+                }
+            }
+        } catch (ConnectException ex) {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            logger.info("Retrying ...");
+            fetchStaffTimeTable(queryGroup, currentTimeTable);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+    private void fetchGroupTimeTable(Map.Entry<Integer, List<StudentGroup>> queryGroup, TimeTable currentTimeTable) {
         try {
             String timetableURL = baseURL;
             boolean grouped = false;
@@ -175,22 +298,21 @@ public class VUBActivityManager extends ActivityManager{
                 }
             }
         } catch (ConnectException ex) {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             logger.info("Retrying ...");
-            fetchTimeTable(queryGroup, currentTimeTable);
+            fetchGroupTimeTable(queryGroup, currentTimeTable);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
     }
 
-    private void parseTimeTable(StudentGroup group, Element table, TimeTable currentTimeTable) {
-        // Create formatter for the hours:minutes format of the activities
-        SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm");
-        timeFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        CourseServer courseServer = ServiceProvider.getCourseServer();
-
-        logger.info("Extracting models for group: " + group.getName());
+    private List<Activity> parseTimeTable(Element table, TimeTable currentTimeTable, SimpleDateFormat timeFormatter, CourseServer courseServer, TimeTableType timeTableType) {
+        List<Activity> activityList = new ArrayList<>();
         try {
             Elements rows = table.select("tbody").first().children();
             Element headerRow = rows.first();
@@ -237,8 +359,8 @@ public class VUBActivityManager extends ActivityManager{
                             // Extract activity data
                             String eventName = eventData.get(1).html();
                             String eventClass = eventData.get(2).html();
-                            String eventWeeks = eventData.get(3).html();
-                            String eventLector = eventData.get(4).html();
+                            String eventWeeks = eventData.get(timeTableType != TimeTableType.STAFF ? 3 : 4).html();
+                            String eventLector = timeTableType != TimeTableType.STAFF ? eventData.get(4).html() : "";
 
                             // Parse the weeks
                             List<Integer> weeks = new ArrayList<Integer>();
@@ -256,7 +378,6 @@ public class VUBActivityManager extends ActivityManager{
                                 // Save the day of the week for convenience
                                 activity.setDay(dayMapping.get(idxColumn - 1));
                                 activity.setWeek(week);
-                                activity.getGroups().add(group);
                                 // If the course does not exist, put it in a misc group
 
                                 activity.getCourses().add(course);
@@ -275,7 +396,7 @@ public class VUBActivityManager extends ActivityManager{
                                 activity.setEndTime(timeFormatter.format(new Date(endTime * 1000)));
                                 activity.setEndTimeUnix(endTime);
 
-                                addActivity(activity);
+                                activityList.add(activity);
                             }
                         }
                     }
@@ -283,6 +404,37 @@ public class VUBActivityManager extends ActivityManager{
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+        return activityList;
+    }
+
+    private void parseTimeTable(StudentGroup group, Element table, TimeTable currentTimeTable) {
+        // Create formatter for the hours:minutes format of the activities
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm");
+        timeFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        CourseServer courseServer = ServiceProvider.getCourseServer();
+
+        logger.info("Extracting models for group: " + group.getName());
+        List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer,TimeTableType.STUDENT_GROUPED);
+        for (Activity activity : activityList) {
+            activity.addGroup(group);
+            addActivity(activity);
+        }
+    }
+
+    private void parseTimeTable(StaffMember staffMember, Element table, TimeTable currentTimeTable) {
+        // Create formatter for the hours:minutes format of the activities
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm");
+        timeFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        CourseServer courseServer = ServiceProvider.getCourseServer();
+
+        logger.info("Extracting models for staff member: " + staffMember.getName());
+        List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer,TimeTableType.STAFF);
+        for (Activity activity : activityList) {
+            activity.setStaff(staffMember.getName());
+            addActivity(activity);
         }
     }
 

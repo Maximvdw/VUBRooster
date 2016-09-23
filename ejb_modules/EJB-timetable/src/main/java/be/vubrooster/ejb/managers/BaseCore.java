@@ -85,4 +85,16 @@ public abstract class BaseCore {
     public void setClassRoomManager(ClassRoomManager classRoomManager) {
         this.classRoomManager = classRoomManager;
     }
+
+    /**
+     * Sync timeout in seconds
+     * @return sync timeout
+     */
+    public abstract long getSyncTimeout();
+
+    /**
+     * Get sync interval
+     * @return sync interval in minutes
+     */
+    public abstract long getSyncInterval();
 }

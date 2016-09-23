@@ -1,13 +1,12 @@
 package be.vubrooster.ejb.managers;
 
-import be.vubrooster.ejb.ActivitiyServer;
-import be.vubrooster.ejb.CourseServer;
-import be.vubrooster.ejb.StudentGroupServer;
-import be.vubrooster.ejb.StudyProgramServer;
+import be.vubrooster.ejb.*;
 import be.vubrooster.ejb.beans.TimeTableServerBean;
 import be.vubrooster.ejb.service.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Future;
 
 /**
  * EHBRooster
@@ -28,6 +27,8 @@ public class EHBRooster extends BaseCore {
         setActivityManager(new EHBActivityManager(ServiceProvider.getActivitiyServer()));
         setCourseManager(new EHBCourseManager(ServiceProvider.getCourseServer()));
         setStudyProgramManager(new EHBStudyProgramManager(ServiceProvider.getStudyProgramServer()));
+        setStaffManager(new EHBStaffManager(ServiceProvider.getStaffServer()));
+        setClassRoomManager(new EHBClassRoomManager(ServiceProvider.getClassRoomServer()));
     }
 
     @Override
@@ -48,11 +49,47 @@ public class EHBRooster extends BaseCore {
         courseServer.loadCourses();
         logger.info("Saving courses to database ...");
         courseServer.saveCourses();
-        logger.info("Loading timetables for all student groups ...");
+        logger.info("Loading timetables for all courses ...");
         ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
-        activitiyServer.loadActivities();
+        Future<Void> activityLoadFuture = activitiyServer.loadActivitiesForCourses(true);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         logger.info("Assigning courses to groups ...");
         studentGroupServer.assignCoursesToGroups();
+        logger.info("Extracting staff members from activities ...");
+        StaffServer staffServer = ServiceProvider.getStaffServer();
+        staffServer.loadStaff();
+        logger.info("Saving staff to database ...");
+        staffServer.saveStaff();
+        logger.info("Extracting classrooms from activities ...");
+        ClassRoomServer classRoomServer = ServiceProvider.getClassRoomServer();
+        classRoomServer.loadClassRooms();;
+        logger.info("Saving classrooms to database ...");
+        classRoomServer.saveClassRooms();
+        logger.info("Loading timetables for all extracted teachers ...");
+        activityLoadFuture = activitiyServer.loadActivitiesForStaff(false);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public long getSyncTimeout() {
+        return 0;
+    }
+
+    @Override
+    public long getSyncInterval() {
+        return 0;
     }
 
     public static String getBaseURL() {

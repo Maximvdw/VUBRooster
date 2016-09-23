@@ -8,8 +8,12 @@ import be.vubrooster.ejb.models.StudentGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ejb.AccessTimeout;
+import javax.ejb.Asynchronous;
+import javax.ejb.Lock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * ActivityManager
@@ -28,11 +32,40 @@ public class ActivityManager {
     }
 
     /**
-     * Load activities
-     * @param activityList
-     * @return
+     * Load activities for groups
+     * @return future
      */
-    public List<Activity> loadActivities(List<Activity> activityList){
+    public List<Activity> loadActivitiesForGroups(List<Activity> activityList){
+        this.activityList = activityList;
+
+        return activityList;
+    }
+
+    /**
+     * Load acitivites for staff
+     * @return future
+     */
+    public List<Activity> loadActivitiesForStaff(List<Activity> activityList){
+        this.activityList = activityList;
+
+        return activityList;
+    }
+
+    /**
+     * Load activities for classrooms
+     * @return future
+     */
+    public List<Activity> loadActivitiesForClassRooms(List<Activity> activityList){
+        this.activityList = activityList;
+
+        return activityList;
+    }
+
+    /**
+     * Load activities for courses
+     * @return future
+     */
+    public List<Activity> loadActivitiesForCourses(List<Activity> activityList){
         this.activityList = activityList;
 
         return activityList;

@@ -1,5 +1,9 @@
 config: 1
 
+google:
+  client_secret: ""
+  application_name: ""
+
 twitter:
   enabled: false
   consumerKey: ""

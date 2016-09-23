@@ -2,40 +2,53 @@ package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.sql.Date;
 
 /**
  * @author Maxim Van de Wynckel
+ * @project Friendtury
  * @date 13-May-16
  */
 @MappedSuperclass
 public abstract class BaseModel implements Serializable{
-    private long lastSync = 0L;
-    private long lastUpdate = 0L;
+    @Column(name = "DateCreated", nullable = true)
+    private Date dateCreated;
 
-    @Transient
-    private boolean dirty = false;
+    @Column(name = "DateModified", nullable = true)
+    private Date dateModified;
 
-    public long getLastSync() {
-        return lastSync;
+    public Date getDateCreated() {
+        return dateCreated;
     }
 
-    public void setLastSync(long lastSync) {
-        this.lastSync = lastSync;
+    public void setDateCreated(Date date) {
+        dateCreated = date;
     }
 
-    public long getLastUpdate() {
-        return lastUpdate;
+    public Date getDateModified() {
+        return dateModified;
     }
 
-    public void setLastUpdate(long lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setDateModified(Date date) {
+        dateModified = date;
     }
 
-    public boolean isDirty() {
-        return dirty;
+    @PreUpdate
+    @PrePersist
+    @PreRemove
+    protected void prePersist() {
+        Date now = new Date(System.currentTimeMillis());
+        if (dateCreated == null) {
+            dateCreated = now;
+        }
+        dateModified = now;
     }
 
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
+    @PostUpdate
+    @PostPersist
+    @PostRemove
+    protected void postPersist() {
+
     }
+
 }

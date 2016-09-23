@@ -102,6 +102,11 @@ public class VUBStudyProgramManager extends StudyProgramManager{
             }
             logger.error(
                     "Unable to get faculty page '" + language.name() + "' for faculty: " + faculty.getCode());
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
             logger.error("Retrying getting faculty page ...");
             loadFacultyPage(url, studyProgram, faculty, language);
         }

@@ -3,32 +3,41 @@ package be.vubrooster.ejb.models;
 import javax.persistence.*;
 
 /**
- * Staff
+ * StaffMember
  * Created by maxim on 15-Sep-16.
  */
 @Entity
-@Cacheable(true)
+@Cacheable()
 @Table(name = "staff", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
+        @Index(name = "i2", columnList = "splusId", unique = true),
 })
 @NamedQueries({
         @NamedQuery(name = "findStaff",
-                query = "SELECT s FROM Staff s"),
+                query = "SELECT s FROM StaffMember s"),
 })
-public class Staff extends BaseModel{
+public class StaffMember extends BaseSyncModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
     @Column(name = "name")
     private String name = "";
+    @Column(name = "splusId")
+    private String splusId = "";
 
-    public Staff(){
+    public StaffMember(){
 
     }
 
-    public Staff(String name){
+    public StaffMember(String name){
         setName(name);
+        setSplusId(name);
+    }
+
+    public StaffMember(String name, String splusId){
+        setName(name);
+        setSplusId(splusId);
     }
 
     public int getId() {
@@ -47,19 +56,27 @@ public class Staff extends BaseModel{
         this.name = name;
     }
 
+    public String getSplusId() {
+        return splusId;
+    }
+
+    public void setSplusId(String splusId) {
+        this.splusId = splusId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Staff staff = (Staff) o;
+        StaffMember that = (StaffMember) o;
 
-        return name != null ? name.equals(staff.name) : staff.name == null;
+        return splusId != null ? splusId.equals(that.splusId) : that.splusId == null;
 
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return splusId != null ? splusId.hashCode() : 0;
     }
 }
