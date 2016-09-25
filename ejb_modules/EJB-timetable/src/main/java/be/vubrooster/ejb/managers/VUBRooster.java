@@ -81,7 +81,7 @@ public class VUBRooster extends BaseCore{
 
     @Override
     public long getSyncTimeout() {
-        return 7;
+        return 40;
     }
 
     @Override

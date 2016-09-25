@@ -41,7 +41,7 @@ public class Activity extends BaseSyncModel {
     private String staff = "";
     @Column(name = "groupsString",length = 750)
     private String groupsString = "";
-    @ManyToMany(cascade = CascadeType.DETACH,fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.REMOVE,fetch = FetchType.EAGER)
     @JoinTable(name = "activity_courses",
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),
@@ -67,7 +67,7 @@ public class Activity extends BaseSyncModel {
     private long endTimeUnix = 0;
     @Column(name = "day")
     private int day = 0;
-    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JoinTable(name = "activity_studentgroups",
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),

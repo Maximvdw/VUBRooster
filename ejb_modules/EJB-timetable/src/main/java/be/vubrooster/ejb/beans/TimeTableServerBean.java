@@ -3,7 +3,7 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.*;
 import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
-import be.vubrooster.ejb.managers.EHBRooster;
+import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.models.Sync;
 import be.vubrooster.ejb.models.TimeTable;

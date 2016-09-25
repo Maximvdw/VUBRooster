@@ -31,7 +31,7 @@ public class StudyProgram extends BaseSyncModel {
 	private Language language = Language.DUTCH;
     @Column(name = "url")
 	private String url = "";
-    @ManyToOne(cascade = CascadeType.DETACH)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "faculty_id")
 	private Faculty faculty = null;
 

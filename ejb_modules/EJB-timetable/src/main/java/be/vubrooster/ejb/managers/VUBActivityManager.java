@@ -63,21 +63,10 @@ public class VUBActivityManager extends ActivityManager {
         //int maxQuerySize = 50;
         int maxQuerySize = 25;
         final Map<Integer, List<StudentGroup>> queryGroups = new TreeMap<>();
-        int queryPart = 0;
-        int groupSize = 0;
+        Integer queryPart = 0;
         List<StudentGroup> groups = new ArrayList<>();
-        splitStudentGroups(individualGroups, groups, groupSize, maxQuerySize, queryGroups, queryPart);
-        if (groups.size() != 0) {
-            queryGroups.put(queryPart, new ArrayList<>(groups));
-            queryPart++;
-        }
-        groupSize = 0;
-        groups.clear();
-        splitStudentGroups(groupedGroups, groups, groupSize, maxQuerySize, queryGroups, queryPart);
-        if (groups.size() != 0) {
-            queryGroups.put(queryPart, new ArrayList<>(groups));
-            groups.clear();
-        }
+        queryPart = splitStudentGroups(individualGroups, groups, maxQuerySize, queryGroups, queryPart);
+        splitStudentGroups(groupedGroups, groups, maxQuerySize, queryGroups, queryPart);
 
         // Create a thread pool
         List<Thread> threadPool = new ArrayList<>();
@@ -190,12 +179,12 @@ public class VUBActivityManager extends ActivityManager {
      *
      * @param filteredGroups
      * @param groups
-     * @param groupSize
      * @param maxQuerySize
      * @param queryGroups
      * @param queryPart
      */
-    private void splitStudentGroups(List<StudentGroup> filteredGroups, List<StudentGroup> groups, int groupSize, int maxQuerySize, Map<Integer, List<StudentGroup>> queryGroups, int queryPart) {
+    private Integer splitStudentGroups(List<StudentGroup> filteredGroups, List<StudentGroup> groups, Integer maxQuerySize, Map<Integer, List<StudentGroup>> queryGroups, Integer queryPart) {
+        int groupSize = 0;
         for (StudentGroup group : filteredGroups) {
             groups.add(group);
             groupSize++;
@@ -206,9 +195,15 @@ public class VUBActivityManager extends ActivityManager {
                 groups.clear();
             }
         }
+        if (groups.size() != 0) {
+            queryGroups.put(queryPart, new ArrayList<>(groups));
+            queryPart++;
+        }
+        groups.clear();
+        return queryPart;
     }
 
-    private void splitStaffMembers(List<StaffMember> filteredStaffMembers, int maxQuerySize, Map<Integer, List<StaffMember>> queryGroups) {
+    private void splitStaffMembers(List<StaffMember> filteredStaffMembers, Integer maxQuerySize, Map<Integer, List<StaffMember>> queryGroups) {
         List<StaffMember> staffMembers = new ArrayList<>();
         int queryPart = 0;
         for (StaffMember staffMember : filteredStaffMembers) {
@@ -218,6 +213,9 @@ public class VUBActivityManager extends ActivityManager {
                 queryPart++;
                 staffMembers.clear();
             }
+        }
+        if (staffMembers.size() != 0) {
+            queryGroups.put(queryPart, new ArrayList<>(staffMembers));
         }
     }
 
@@ -385,6 +383,9 @@ public class VUBActivityManager extends ActivityManager {
                                 if (course == null) {
                                     if (eventName.contains(" (WPO") || eventName.contains(" (HOC")) {
                                         course = new Course(eventName.substring(0, eventName.indexOf("(") - 1));
+                                        course.setDirty(true);
+                                        course.setLastUpdate(System.currentTimeMillis() / 1000);
+                                        course.setLastSync(System.currentTimeMillis() / 1000);
                                         course = ServiceProvider.getCourseServer().createCourse(course);
                                         activity.getCourses().add(course);
                                     } else {
@@ -434,6 +435,9 @@ public class VUBActivityManager extends ActivityManager {
         for (Map.Entry<String, Integer> names : nameCounter.entrySet()) {
             if (names.getValue() > 2) {
                 Course course = new Course(names.getKey());
+                course.setDirty(true);
+                course.setLastUpdate(System.currentTimeMillis() / 1000);
+                course.setLastSync(System.currentTimeMillis() / 1000);
                 ServiceProvider.getCourseServer().createCourse(course);
             }
         }

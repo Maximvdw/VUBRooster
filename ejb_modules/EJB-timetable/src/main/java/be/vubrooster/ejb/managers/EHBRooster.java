@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
 
 /**
- * EHBRooster
+ * EHBooster
  * Created by maxim on 21-Sep-16.
  */
 public class EHBRooster extends BaseCore {
@@ -101,12 +101,12 @@ public class EHBRooster extends BaseCore {
 
     @Override
     public long getSyncTimeout() {
-        return 30;
+        return 70;
     }
 
     @Override
     public long getSyncInterval() {
-        return 60;
+        return 25;
     }
 
     public static String getBaseURL() {

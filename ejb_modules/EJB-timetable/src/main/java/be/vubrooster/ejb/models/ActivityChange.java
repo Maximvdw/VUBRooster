@@ -14,7 +14,7 @@ public class ActivityChange extends BaseSyncModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
-    @ManyToOne(cascade = CascadeType.DETACH)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "activity_id")
     private Activity activity = null;
 

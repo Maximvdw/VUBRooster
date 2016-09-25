@@ -130,12 +130,7 @@ public class CourseServerBean implements CourseServer {
                 savedCourses.add(savedCourse);
             }else{
                 // Check if removed
-                if (course.getLastSync() < currentTimeTable.getLastSync()) {
-                    logger.info("Removing course: " + course.getName());
-                    getSession().delete(entityManager.merge(course));
-                }else {
-                    savedCourses.add(course);
-                }
+                savedCourses.add(course);
             }
         }
         return savedCourses;
