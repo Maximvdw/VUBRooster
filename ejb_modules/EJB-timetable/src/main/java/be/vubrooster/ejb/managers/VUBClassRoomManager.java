@@ -24,9 +24,9 @@ public class VUBClassRoomManager extends ClassRoomManager{
             if (activity != null) {
                 if (activity.getClassRoom().contains(",")) {
                     // Multiple teachers
-                    String[] classRooms = activity.getStaff().split(",");
+                    String[] classRooms = activity.getClassRoom().split(",");
                     for (String classRoomString : classRooms) {
-                        ClassRoom classRoom = new ClassRoom(classRoomString);
+                        ClassRoom classRoom = new ClassRoom(classRoomString.trim());
                         addClassRoom(classRoom);
                     }
                 } else {

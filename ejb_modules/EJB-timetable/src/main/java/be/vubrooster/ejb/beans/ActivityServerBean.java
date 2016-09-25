@@ -3,9 +3,7 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.TimeTableServer;
 import be.vubrooster.ejb.managers.BaseCore;
-import be.vubrooster.ejb.models.Activity;
-import be.vubrooster.ejb.models.Sync;
-import be.vubrooster.ejb.models.TimeTable;
+import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -62,6 +60,27 @@ public class ActivityServerBean implements ActivitiyServer {
     }
 
     @Override
+    public List<Activity> findAllActivitiesForStaffMember(StaffMember member) {
+        Query query = getSession().getNamedQuery("findAllActivitiesForStaffMember");
+        query.setParameter("staff",member.getId());
+        return query.list();
+    }
+
+    @Override
+    public List<Activity> findAllActivitiesForClassRoom(ClassRoom classRoom) {
+        Query query = getSession().getNamedQuery("findAllActivitiesForClassRoom");
+        query.setParameter("classRoom",classRoom.getId());
+        return query.list();
+    }
+
+    @Override
+    public List<Activity> findAllActivitiesForStudentGroup(StudentGroup group) {
+        Query query = getSession().getNamedQuery("findAllActivitiesForStudentGroup");
+        query.setParameter("studentGroup",group.getId());
+        return query.list();
+    }
+
+    @Override
     public int getActivitiesCount(boolean useCache) {
         return activityList.size();
     }
@@ -95,7 +114,7 @@ public class ActivityServerBean implements ActivitiyServer {
     }
 
     @Override
-    public synchronized List<Activity> saveActivities(List<Activity> activities, Sync sync) {
+    public List<Activity> saveActivities(List<Activity> activities, Sync sync) {
         TimeTableServer timeTableServer = ServiceProvider.getTimeTableServer();
         TimeTable currentTimeTable = timeTableServer.getCurrentTimeTable();
 
@@ -110,7 +129,7 @@ public class ActivityServerBean implements ActivitiyServer {
                             activity.setLastUpdate(System.currentTimeMillis() / 1000);
                             activity.setDirty(false);
                             logger.info("Added activity: " + activity.getName() + " [" + activity.getBeginTimeUnix() + "]");
-                            savedActivities.add((Activity) getSession().merge(activity));
+                            savedActivities.add(entityManager.merge(activity));
                             added++;
                         } catch (Exception ex) {
                             logger.error("Unable to sync activity!");
@@ -121,7 +140,7 @@ public class ActivityServerBean implements ActivitiyServer {
                         // Removed activity
                         try {
                             logger.info("Removed activity: " + activity.getName() + " [" + activity.getBeginTimeUnix() + "]");
-                            getSession().delete(getSession().merge(activity));
+                            entityManager.remove(entityManager.merge(activity));
                             removed++;
                         } catch (Exception ex) {
                             logger.error("Unable to sync activity!");
@@ -133,7 +152,7 @@ public class ActivityServerBean implements ActivitiyServer {
             // Save models
             if (currentTimeTable != null) {
                 currentTimeTable.setLastSync(System.currentTimeMillis() / 1000);
-                ServiceProvider.getTimeTableServer().updateTimeTable((TimeTable) getSession().merge(currentTimeTable));
+                ServiceProvider.getTimeTableServer().updateTimeTable(entityManager.merge(currentTimeTable));
             }
 
             // Store sync information
@@ -144,8 +163,6 @@ public class ActivityServerBean implements ActivitiyServer {
             sync.setStudentGroups(ServiceProvider.getStudentGroupServer().getStudentGroupsCount(false));
             sync.setStudyProgrammes(ServiceProvider.getStudyProgramServer().getStudyProgrammesCount(false));
             ServiceProvider.getSyncServer().saveSync(sync); // Save sync
-
-            ServiceProvider.getTwitterServer().postStatus("Synchronisation completed in " + sync.getDuration() + "ms. (+" + sync.getAdded() + ") (-" + sync.getRemoved() + ")");
         } catch (Throwable ex) {
             ex.printStackTrace();
         }
@@ -234,11 +251,11 @@ public class ActivityServerBean implements ActivitiyServer {
     public Session getSession() {
         if (session != null) {
             if (!session.isOpen()) {
-                session = (Session) entityManager.getDelegate();
+                session = entityManager.unwrap(Session.class);
             }
             return session;
         }
-        session = (Session) entityManager.getDelegate();
+        session = entityManager.unwrap(Session.class);
         return session;
     }
 

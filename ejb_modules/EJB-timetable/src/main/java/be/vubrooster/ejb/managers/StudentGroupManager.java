@@ -45,13 +45,24 @@ public abstract class StudentGroupManager {
      */
     public StudentGroup addStudentGroup(StudentGroup studentGroup) {
         if (!studentGroupList.contains(studentGroup)) {
+            studentGroup.setDirty(true);
+            studentGroup.setLastUpdate(System.currentTimeMillis() / 1000);
+            studentGroup.setLastSync(System.currentTimeMillis() / 1000);
             studentGroupList.add(studentGroup);
             return studentGroup;
         } else {
             StudentGroup existingGroup = studentGroupList.get(studentGroupList.indexOf(studentGroup));
+            boolean change = false;
             for (StudyProgram program : studentGroup.getStudyProgrammes()) {
-                existingGroup.addStudyProgram(program);
+                if (existingGroup.addStudyProgram(program) && !change){
+                    change = true;
+                }
             }
+            if (change) { // You don't know if it was dirty already
+                existingGroup.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingGroup.setDirty(true);
+            }
+            existingGroup.setLastSync(System.currentTimeMillis() / 1000);
             return existingGroup;
         }
     }

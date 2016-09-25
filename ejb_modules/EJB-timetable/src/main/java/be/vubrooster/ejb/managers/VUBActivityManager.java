@@ -2,7 +2,6 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.CourseServer;
-import be.vubrooster.ejb.StudentGroupServer;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
 import be.vubrooster.utils.HtmlUtils;
@@ -12,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -24,7 +24,7 @@ public class VUBActivityManager extends ActivityManager {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("NL"));
 
-    private enum TimeTableType{
+    private enum TimeTableType {
         STUDENT_INDIVIDUAL,
         STUDENT_GROUPED,
         STAFF
@@ -60,7 +60,8 @@ public class VUBActivityManager extends ActivityManager {
         // THIS WILL CRASH THE VUB SPLUS SERVER
         // MAXIMUM SIZE 300
 
-        int maxQuerySize = 50;
+        //int maxQuerySize = 50;
+        int maxQuerySize = 25;
         final Map<Integer, List<StudentGroup>> queryGroups = new TreeMap<>();
         int queryPart = 0;
         int groupSize = 0;
@@ -126,7 +127,8 @@ public class VUBActivityManager extends ActivityManager {
         formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         List<StaffMember> staffMembers = ServiceProvider.getStaffServer().findStaff(true);
-        int maxQuerySize = 50;
+        //int maxQuerySize = 50;
+        int maxQuerySize = 25;
         final Map<Integer, List<StaffMember>> queryGroups = new TreeMap<>();
         splitStaffMembers(staffMembers, maxQuerySize, queryGroups);
 
@@ -223,7 +225,7 @@ public class VUBActivityManager extends ActivityManager {
         try {
             String timetableURL = baseURL;
             for (StaffMember staffMember : queryGroup.getValue()) {
-                timetableURL += "&identifier=" + staffMember.getSplusId().replace(" ", "%20");
+                timetableURL += "&identifier=" + staffMember.getId().replace(" ", "%20");
             }
             timetableURL += "&template=Staff%2BIndividual&objectclass=staff";
             Document timetablePage = Jsoup.parse(HtmlUtils.sendGetRequest(timetableURL, new HashMap<>(), 25000).getSource());
@@ -248,7 +250,7 @@ public class VUBActivityManager extends ActivityManager {
                     parseTimeTable(member, table, currentTimeTable);
                 }
             }
-        } catch (ConnectException ex) {
+        } catch (ConnectException | SocketTimeoutException ex) {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
@@ -297,7 +299,7 @@ public class VUBActivityManager extends ActivityManager {
                     parseTimeTable(group, table, currentTimeTable);
                 }
             }
-        } catch (ConnectException ex) {
+        } catch (ConnectException | SocketTimeoutException ex) {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
@@ -380,7 +382,17 @@ public class VUBActivityManager extends ActivityManager {
                                 activity.setWeek(week);
                                 // If the course does not exist, put it in a misc group
 
-                                activity.getCourses().add(course);
+                                if (course == null) {
+                                    if (eventName.contains(" (WPO") || eventName.contains(" (HOC")) {
+                                        course = new Course(eventName.substring(0, eventName.indexOf("(") - 1));
+                                        course = ServiceProvider.getCourseServer().createCourse(course);
+                                        activity.getCourses().add(course);
+                                    } else {
+                                        // Unknown
+                                    }
+                                } else {
+                                    activity.getCourses().add(course);
+                                }
 
                                 // Get the start unix time of the week
                                 // It is the start week (fex 19 sep 2016) + week
@@ -405,6 +417,33 @@ public class VUBActivityManager extends ActivityManager {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        List<Activity> courseLessActivities = new ArrayList<>();
+        for (Activity activity : activityList) {
+            if (activity.getCourses().size() == 0) {
+                courseLessActivities.add(activity);
+            }
+        }
+        Map<String, Integer> nameCounter = new HashMap<>();
+        for (Activity activity : courseLessActivities) {
+            if (nameCounter.containsKey(activity.getName())) {
+                nameCounter.put(activity.getName(), nameCounter.get(activity.getName()) + 1);
+            } else {
+                nameCounter.put(activity.getName(), 1);
+            }
+        }
+        for (Map.Entry<String, Integer> names : nameCounter.entrySet()) {
+            if (names.getValue() > 2) {
+                Course course = new Course(names.getKey());
+                ServiceProvider.getCourseServer().createCourse(course);
+            }
+        }
+        for (Activity activity : courseLessActivities) {
+            // Try to match it to an existing course
+            Course course = courseServer.findCourseByName(activity.getName(), true);
+            if (course != null) {
+                activity.getCourses().add(course);
+            }
+        }
         return activityList;
     }
 
@@ -416,7 +455,7 @@ public class VUBActivityManager extends ActivityManager {
         CourseServer courseServer = ServiceProvider.getCourseServer();
 
         logger.info("Extracting models for group: " + group.getName());
-        List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer,TimeTableType.STUDENT_GROUPED);
+        List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer, TimeTableType.STUDENT_GROUPED);
         for (Activity activity : activityList) {
             activity.addGroup(group);
             addActivity(activity);
@@ -431,7 +470,7 @@ public class VUBActivityManager extends ActivityManager {
         CourseServer courseServer = ServiceProvider.getCourseServer();
 
         logger.info("Extracting models for staff member: " + staffMember.getName());
-        List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer,TimeTableType.STAFF);
+        List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer, TimeTableType.STAFF);
         for (Activity activity : activityList) {
             activity.setStaff(staffMember.getName());
             addActivity(activity);

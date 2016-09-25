@@ -3,6 +3,7 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.StudyProgramServer;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.StudyProgram;
+import be.vubrooster.ejb.models.TimeTable;
 import be.vubrooster.ejb.service.ServiceProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -97,8 +98,14 @@ public class StudyProgramServerBean implements StudyProgramServer {
     @Override
     public List<StudyProgram> saveStudyProgrammes(List<StudyProgram> studyPrograms) {
         List<StudyProgram> savedProgrammes = new ArrayList<>();
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         for (StudyProgram program : studyPrograms) {
-            savedProgrammes.add((StudyProgram) getSession().merge(program));
+            if (program.getLastSync() < currentTimeTable.getLastSync()) {
+                logger.info("Removing study program: " + program.getName());
+                getSession().delete(entityManager.merge(program));
+            }else {
+                savedProgrammes.add((StudyProgram) getSession().merge(program));
+            }
         }
         return savedProgrammes;
     }

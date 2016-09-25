@@ -4,6 +4,8 @@ import be.vubrooster.ejb.CourseServer;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.models.CourseVariant;
+import be.vubrooster.ejb.models.TimeTable;
+import be.vubrooster.ejb.service.ServiceProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -82,7 +84,7 @@ public class CourseServerBean implements CourseServer {
     }
 
     @Override
-    public Course findCourseById(int id, boolean useCache) {
+    public Course findCourseById(String id, boolean useCache) {
         if (courseList.isEmpty() || !useCache) {
             // Perform query
             Query query = getSession().getNamedQuery("findCourseById");
@@ -91,7 +93,7 @@ public class CourseServerBean implements CourseServer {
         } else {
             // Use cache
             for (Course course : courseList) {
-                if (course.getId() == id) {
+                if (course.getId().equals(id)) {
                     return course;
                 }
             }
@@ -101,12 +103,17 @@ public class CourseServerBean implements CourseServer {
 
     @Override
     public Course createCourse(Course course) {
-        return (Course) getSession().merge(course);
+        Course savedCourse = (Course) getSession().merge(course);
+        if (!courseList.contains(savedCourse)){
+            courseList.add(savedCourse);
+        }
+        return savedCourse;
     }
 
     @Override
     public List<Course> saveCourses(List<Course> courses) {
         List<Course> savedCourses = new ArrayList<>();
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         for (Course course : courses) {
             if (course.isDirty()) {
                 Course savedCourse = (Course) getSession().merge(course);
@@ -123,7 +130,12 @@ public class CourseServerBean implements CourseServer {
                 savedCourses.add(savedCourse);
             }else{
                 // Check if removed
-                savedCourses.add(course);
+                if (course.getLastSync() < currentTimeTable.getLastSync()) {
+                    logger.info("Removing course: " + course.getName());
+                    getSession().delete(entityManager.merge(course));
+                }else {
+                    savedCourses.add(course);
+                }
             }
         }
         return savedCourses;

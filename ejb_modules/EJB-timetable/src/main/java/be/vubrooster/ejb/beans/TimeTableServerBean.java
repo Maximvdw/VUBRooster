@@ -75,9 +75,6 @@ public class TimeTableServerBean implements TimeTableServer {
         if (getCurrentTimeTable() == null) {
             logger.info("No previous sync found! Starting as new installation ...");
             currentTimeTable = new TimeTable();
-            twitterServer.postStatus("[" + (System.currentTimeMillis() / 1000 ) + "] Started application (Fresh database)");
-        }else{
-            twitterServer.postStatus("[" + (System.currentTimeMillis() / 1000 ) + "] Started application");
         }
         logger.info("Loading faculities ...");
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
@@ -95,7 +92,7 @@ public class TimeTableServerBean implements TimeTableServer {
                     logger.warn("Synchronisation skipped due to still running!");
                 }
             }
-        }, 5, TimeUnit.MINUTES);
+        }, BaseCore.getInstance().getSyncInterval(), TimeUnit.MINUTES);
     }
 
     /**

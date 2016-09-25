@@ -16,6 +16,7 @@
         </properties>
 
         <class>be.vubrooster.ejb.models.BaseSyncModel</class>
+        <class>be.vubrooster.ejb.models.BaseModel</class>
         <class>be.vubrooster.ejb.models.Activity</class>
         <class>be.vubrooster.ejb.models.ActivityChange</class>
         <class>be.vubrooster.ejb.models.Course</class>
@@ -29,5 +30,6 @@
         <class>be.vubrooster.ejb.models.StaffMember</class>
         <class>be.vubrooster.ejb.models.ClassRoom</class>
         <class>be.vubrooster.ejb.models.User</class>
+        <class>be.vubrooster.ejb.models.GoogleCalendar</class>
     </persistence-unit>
 </persistence>

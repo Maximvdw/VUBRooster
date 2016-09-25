@@ -67,7 +67,7 @@ public class VUBCourseManager extends CourseManager{
 
                 //String facultyCode = courseInfo.select(".label-1-0-4").first().html().split(" ")[1];
                 Course course = new Course((courseName.html()));
-                course.setSplusId(course.getName() + " " + courseInfo.select(".label-1-0-4").first().html());
+                course.setId(course.getName() + " " + courseInfo.select(".label-1-0-4").first().html());
                 Element root = courseName.parents().get(7); // Go 8 places up
                 Element table = root.nextElementSibling(); // The next table should contain the variants of the course
                 // Check if the class of that table is correct

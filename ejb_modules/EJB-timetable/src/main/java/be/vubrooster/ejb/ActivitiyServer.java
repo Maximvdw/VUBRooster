@@ -1,7 +1,6 @@
 package be.vubrooster.ejb;
 
-import be.vubrooster.ejb.models.Activity;
-import be.vubrooster.ejb.models.Sync;
+import be.vubrooster.ejb.models.*;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -20,6 +19,28 @@ public interface ActivitiyServer {
      * @return list of activities
      */
     List<Activity> findActivities(boolean useCache);
+
+    /**
+     * Find all activities for staff member
+     *
+     * @param member member to get activities for
+     * @return list of activities
+     */
+    List<Activity> findAllActivitiesForStaffMember(StaffMember member);
+
+    /**
+     * Find all activities for class room
+     * @param classRoom class rom to get activities for
+     * @return list of activities
+     */
+    List<Activity> findAllActivitiesForClassRoom(ClassRoom classRoom);
+
+    /**
+     * Find all activities for student group
+     * @param group student group to get activities for
+     * @return list of activities
+     */
+    List<Activity> findAllActivitiesForStudentGroup(StudentGroup group);
 
     /**
      * Get activities count

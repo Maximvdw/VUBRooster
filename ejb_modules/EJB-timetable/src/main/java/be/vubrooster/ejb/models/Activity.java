@@ -24,6 +24,9 @@ import java.util.List;
         @NamedQuery(name = "findActivities",
                 query = "SELECT a FROM Activity a"),
         @NamedQuery(name = "findActivityById", query = "SELECT a FROM Activity a WHERE a.id = :id"),
+        @NamedQuery(name = "findAllActivitiesForStaffMember",query = "SELECT a FROM Activity a WHERE (a.staff LIKE :staff) ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForClassRoom",query = "SELECT a FROM Activity a WHERE (a.classRoom LIKE :classRoom) ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForStudentGroup",query = "SELECT a FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup ORDER BY a.beginTimeUnix ASC"),
 })
 public class Activity extends BaseSyncModel {
     @Id
@@ -43,7 +46,9 @@ public class Activity extends BaseSyncModel {
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),
             inverseJoinColumns=
-            @JoinColumn(name="course_id", referencedColumnName="id")
+            @JoinColumn(name="course_id", referencedColumnName="id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = {
+                    "activity_id", "course_id" })}
     )
     private List<Course> courses = Collections.synchronizedList(new ArrayList<>());
     @Column(name = "week")
@@ -67,7 +72,9 @@ public class Activity extends BaseSyncModel {
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),
             inverseJoinColumns=
-            @JoinColumn(name="studentgroup_id", referencedColumnName="id")
+            @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = {
+                    "activity_id", "studentgroup_id" })}
     )
     private List<StudentGroup> groups = Collections.synchronizedList(new ArrayList<>());
 
@@ -198,6 +205,17 @@ public class Activity extends BaseSyncModel {
         }
         if (!groups.contains(group)){
             groups.add(group);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addCourse(Course course){
+        if (course == null){
+            return false;
+        }
+        if (!courses.contains(course)){
+            courses.add(course);
             return true;
         }
         return false;

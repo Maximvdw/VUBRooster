@@ -26,7 +26,7 @@ public class VUBStaffManager extends StaffManager{
                     // Multiple teachers
                     String[] teachers = activity.getStaff().split(",");
                     for (String teacher : teachers) {
-                        StaffMember staff = new StaffMember(teacher);
+                        StaffMember staff = new StaffMember(teacher.trim());
                         addStaff(staff);
                     }
                 } else {

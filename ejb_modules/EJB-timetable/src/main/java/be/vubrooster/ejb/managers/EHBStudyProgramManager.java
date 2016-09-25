@@ -28,18 +28,10 @@ public class EHBStudyProgramManager extends StudyProgramManager{
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
         List<Faculty> faculties = facultyServer.findFaculties(true);
 
-        StudentGroupServer studentGroupServer = ServiceProvider.getStudentGroupServer();
-        List<StudentGroup> studentGroups = studentGroupServer.findStudentGroups(true);
-        for (StudentGroup studentGroup : studentGroups){
-            for (Faculty faculty : faculties){
-                if (studentGroup.getLongName().contains(faculty.getCode())){
-                    StudyProgram studyProgram = new StudyProgram("",faculty.getNameDutch(), Language.DUTCH);
-                    studyProgram.setFaculty(faculty);
-                    studyProgram = addStudyProgram(studyProgram);
-                    studentGroup.addStudyProgram(studyProgram);
-                    break;
-                }
-            }
+        for (Faculty faculty : faculties){
+            StudyProgram studyProgram = new StudyProgram("",faculty.getNameDutch(), Language.DUTCH);
+            studyProgram.setFaculty(faculty);
+            addStudyProgram(studyProgram);
         }
         return getStudyProgramList();
     }

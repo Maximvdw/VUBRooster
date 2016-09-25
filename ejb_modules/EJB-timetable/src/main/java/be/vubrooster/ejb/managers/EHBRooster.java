@@ -35,30 +35,19 @@ public class EHBRooster extends BaseCore {
     public void sync() {
         StudyProgramServer studyProgramServer = ServiceProvider.getStudyProgramServer();
         StudentGroupServer studentGroupServer = ServiceProvider.getStudentGroupServer();
-        logger.info("Loading student groups");
-        studentGroupServer.loadStudentGroups();
-        logger.info("Loading study programmes ...");
-        studyProgramServer.loadStudyProgrammes();
-        logger.info("Saving study programmes to database ...");
-        studyProgramServer.saveStudyProgrammes();
-        logger.info("Saving student groups to database ...");
-        studentGroupServer.saveStudentGroups();
-
         logger.info("Loading courses ...");
         CourseServer courseServer = ServiceProvider.getCourseServer();
         courseServer.loadCourses();
         logger.info("Saving courses to database ...");
         courseServer.saveCourses();
-        logger.info("Loading timetables for all courses ...");
-        ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
-        Future<Void> activityLoadFuture = activitiyServer.loadActivitiesForCourses(true);
-        while (!activityLoadFuture.isDone()){
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        logger.info("Loading study programmes ...");
+        studyProgramServer.loadStudyProgrammes();
+        logger.info("Loading student groups");
+        studentGroupServer.loadStudentGroups();
+        logger.info("Saving study programmes to database ...");
+        studyProgramServer.saveStudyProgrammes();
+        logger.info("Saving student groups to database ...");
+        studentGroupServer.saveStudentGroups();
         logger.info("Assigning courses to groups ...");
         studentGroupServer.assignCoursesToGroups();
         logger.info("Extracting staff members from activities ...");
@@ -71,8 +60,36 @@ public class EHBRooster extends BaseCore {
         classRoomServer.loadClassRooms();;
         logger.info("Saving classrooms to database ...");
         classRoomServer.saveClassRooms();
+        logger.info("Loading timetables for all courses ...");
+        ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
+        Future<Void> activityLoadFuture = activitiyServer.loadActivitiesForCourses(true);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         logger.info("Loading timetables for all extracted teachers ...");
         activityLoadFuture = activitiyServer.loadActivitiesForStaff(false);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        logger.info("Loading timetables for all extracted classrooms ...");
+        activityLoadFuture = activitiyServer.loadActivitiesForClassRooms(false);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        logger.info("Loading timetables for all groups...");
+        activityLoadFuture = activitiyServer.loadActivitiesForGroups(false);
         while (!activityLoadFuture.isDone()){
             try {
                 Thread.sleep(100);
@@ -84,12 +101,12 @@ public class EHBRooster extends BaseCore {
 
     @Override
     public long getSyncTimeout() {
-        return 0;
+        return 30;
     }
 
     @Override
     public long getSyncInterval() {
-        return 0;
+        return 60;
     }
 
     public static String getBaseURL() {

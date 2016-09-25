@@ -13,21 +13,18 @@ import java.util.List;
 @Table(name = "studentgroups", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
         @Index(name = "i2", columnList = "name", unique = true),
-        @Index(name = "i3", columnList = "splusId", unique = true),
         @Index(name = "i4", columnList = "active", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findStudentGroups",
                 query = "SELECT sg FROM StudentGroup sg"),
         @NamedQuery(name = "findStudentGroupById", query = "SELECT sg FROM StudentGroup sg WHERE sg.id = :id"),
-        @NamedQuery(name = "findStudentGroupBySplusId", query = "SELECT sg FROM StudentGroup sg WHERE sg.splusId = :splusId"),
         @NamedQuery(name = "findStudentGroupByName", query = "SELECT sg FROM StudentGroup sg WHERE sg.name = :name"),
 })
-public class StudentGroup extends BaseSyncModel {
+public class StudentGroup extends BaseSyncModel implements Comparable<StudentGroup>{
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-	private int id;
+    private String id = "";
     @Column(name = "name")
 	private String name = "";
     @Column(name = "longName")
@@ -37,7 +34,9 @@ public class StudentGroup extends BaseSyncModel {
             joinColumns=
             @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
             inverseJoinColumns=
-            @JoinColumn(name="studyprogram_id", referencedColumnName="id")
+            @JoinColumn(name="studyprogram_id", referencedColumnName="id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = {
+                    "studentgroup_id", "studyprogram_id" })}
     )
 	private List<StudyProgram> studyProgrammes = new ArrayList<>();
     @Column(name = "active")
@@ -47,13 +46,15 @@ public class StudentGroup extends BaseSyncModel {
             joinColumns=
             @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
             inverseJoinColumns=
-            @JoinColumn(name="course_id", referencedColumnName="id")
+            @JoinColumn(name="course_id", referencedColumnName="id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = {
+                    "studentgroup_id", "course_id" })}
     )
 	private List<Course> courses = new ArrayList<>();
-    @Column(name = "splusId")
-    private String splusId = "";
     @Column(name = "individual")
     private boolean individual = false;
+    @Column(name = "listIdx")
+    private int listIdx = 0;
 
     public StudentGroup(){
 
@@ -61,20 +62,12 @@ public class StudentGroup extends BaseSyncModel {
 
     public StudentGroup(String name, String splusId){
         setName(name);
-        setSplusId(splusId);
+        setId(splusId);
     }
 
 	public StudentGroup(String name){
 		setName(name);
-        setSplusId(name);
-	}
-	
-	public int getId(){
-		return id;
-	}
-	
-	public void setId(int id){
-		this.id = id;
+        setId(name);
 	}
 
 	public String getName() {
@@ -109,6 +102,19 @@ public class StudentGroup extends BaseSyncModel {
         return false;
     }
 
+    @Override
+    public int compareTo(StudentGroup o) {
+        int idx1 = this.getListIdx();
+        int idx2 = o.getListIdx();
+        if (idx2 == idx1) {
+            return 0;
+        } else if (idx1 > idx2) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
     public List<StudyProgram> getStudyProgrammes() {
         return studyProgrammes;
     }
@@ -117,21 +123,21 @@ public class StudentGroup extends BaseSyncModel {
         this.studyProgrammes = studyProgrammes;
     }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-		StudentGroup that = (StudentGroup) o;
+        StudentGroup that = (StudentGroup) o;
 
-		return name != null ? name.equals(that.name) : that.name == null;
+        return id != null ? id.equalsIgnoreCase(that.id) : that.id == null;
 
-	}
+    }
 
-	@Override
-	public int hashCode() {
-		return name != null ? name.hashCode() : 0;
-	}
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 
     public boolean isIndividual() {
         return individual;
@@ -141,12 +147,12 @@ public class StudentGroup extends BaseSyncModel {
         this.individual = individual;
     }
 
-    public String getSplusId() {
-        return splusId;
+    public String getId() {
+        return id;
     }
 
-    public void setSplusId(String splusId) {
-        this.splusId = splusId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getLongName() {
@@ -155,5 +161,13 @@ public class StudentGroup extends BaseSyncModel {
 
     public void setLongName(String longName) {
         this.longName = longName;
+    }
+
+    public int getListIdx() {
+        return listIdx;
+    }
+
+    public void setListIdx(int listIdx) {
+        this.listIdx = listIdx;
     }
 }

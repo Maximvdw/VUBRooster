@@ -48,7 +48,7 @@ public interface CourseServer {
      * @param useCache use cache
      * @return course if found
      */
-    Course findCourseById(int id, boolean useCache);
+    Course findCourseById(String id, boolean useCache);
 
     /**
      * Create course

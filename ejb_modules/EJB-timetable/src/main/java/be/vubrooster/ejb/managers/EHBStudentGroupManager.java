@@ -33,6 +33,7 @@ public class EHBStudentGroupManager extends StudentGroupManager {
 
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
         List<Faculty> faculties = facultyServer.findFaculties(true);
+        List<StudyProgram> studyPrograms = ServiceProvider.getStudyProgramServer().findStudyProgrammes(true);
         // Get all groups from remote site
         try {
             Connection.Response res = Jsoup.connect(EHBRooster.getBaseURL()).timeout(60000).method(Connection.Method.GET)
@@ -67,17 +68,22 @@ public class EHBStudentGroupManager extends StudentGroupManager {
 
             Element selectElement = doc.getElementById("dlObject");
             List<Element> optionElements = selectElement.getElementsByTag("option");
+            int idx = 0;
             for (Element optionElement : optionElements) {
                 StudentGroup group = new StudentGroup(optionElement.text(), optionElement.attr("value"));
                 String[] nameSplit = group.getName().split("/");
                 String facultyCode = nameSplit[0];
-                for (Faculty faculty : faculties) {
-                    if (faculty.getCode().equalsIgnoreCase(facultyCode)) {
-                        group.setLongName(group.getName());
-                        group.setName(filterGroupName(group.getName().substring(facultyCode.length() + 1)));
+                group.setLongName(group.getName());
+                group.setName(filterGroupName(group.getName().substring(facultyCode.length() + 1)));
+                for (StudyProgram studyProgram : studyPrograms){
+                    if (studyProgram.getFaculty().getCode().equals(facultyCode)){
+                        group.addStudyProgram(studyProgram);
+                        break;
                     }
                 }
+                group.setListIdx(idx);
                 addStudentGroup(group);
+                idx++;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,14 +99,29 @@ public class EHBStudentGroupManager extends StudentGroupManager {
         groupName = groupName.replace("2BaDig-X-BIT", "2BaDig-X- BIT");
         groupName = groupName.replace("/KO/K", "/K");
         groupName = groupName.replace("/LO/L", "/L");
-        groupName = groupName.replace("LSO/BE ", "");
-        groupName = groupName.replace("LSO/AA ", "");
+        groupName = groupName.replace("LSO/","");
         groupName = groupName.replace("/PT", "/Ba PT");
         groupName = groupName.replace("IIM/", "IIM");
         groupName = groupName.replace("1VKP", "1/VKP");
         groupName = groupName.replace("2VKP", "2/VKP");
         groupName = groupName.replace("3VKP", "3/VKP");
         groupName = groupName.replace("3BaDig-X S2IT", "3/BaDig-X S2IT");
+        groupName = groupName.replace("1/BE HZ","1/BE HZ ");
+        groupName = groupName.replace("LTAa","Klasgroep LTAa");
+        groupName = groupName.replace("LTAb","Klasgroep LTAb");
+        groupName = groupName.replace("LTA-ERA","ERA LTA");
+        groupName = groupName.replace("LTA-WT","Klasgroep LTA-WT");
+        groupName = groupName.replace("PGD_NCZ","1/LERPGDNCZ");
+        groupName = groupName.replace("Ba AN-2-C","ANI-2D-CULT");
+        groupName = groupName.replace("Ba AN-2-F","ANI-2D-FIL");
+        groupName = groupName.replace("Ba AN-2-P","ANI-2D-POL");
+        groupName = groupName.replace("Ba AN-3-C","ANI-3D-CULT");
+        groupName = groupName.replace("Ba AN-3-F","ANI-3D-FIL");
+        groupName = groupName.replace("Ba AN-3-P","ANI-3D-POL");
+        groupName = groupName.replace("Ba AN-R-C","ANI-R-CULT");
+        groupName = groupName.replace("Ba AN-R-F","ANI-R-FIL");
+        groupName = groupName.replace("Ba AN-R-P","ANI-R-POL");
+
         return groupName;
     }
 
@@ -115,13 +136,15 @@ public class EHBStudentGroupManager extends StudentGroupManager {
                 if (groupNameSplit[0].equals(courseNameSplit[0])){
                     // Check if the group is inside the course name
                     if (course.getLongName().contains(group.getName() + "@") || course.getLongName().contains(group.getName() + "/")  || course.getLongName().contains(group.getName() + " ")) {
-                        group.getCourses().add(course);
+                        if (!group.getCourses().contains(course)) {
+                            group.getCourses().add(course);
+                        }
                     }
                 }
             }
             // Check if there is a group without courses
             if (group.getCourses().size() == 0){
-                logger.error("Group without courses: " + group.getName());
+                logger.error("Group without courses: " + group.getName() + " (" + group.getLongName() + ")");
             }
         }
         return studentGroups;

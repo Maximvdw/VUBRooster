@@ -42,10 +42,14 @@ public class FacultyManager {
      */
     public Faculty addFaculty(Faculty faculty) {
         if (!facultyList.contains(faculty)) {
+            faculty.setDirty(true);
+            faculty.setLastUpdate(System.currentTimeMillis() / 1000);
+            faculty.setLastSync(System.currentTimeMillis() / 1000);
             facultyList.add(faculty);
             return faculty;
         }else {
             Faculty existingFaculty = facultyList.get(facultyList.indexOf(faculty));
+            existingFaculty.setLastSync(System.currentTimeMillis() / 1000);
             return existingFaculty;
         }
     }

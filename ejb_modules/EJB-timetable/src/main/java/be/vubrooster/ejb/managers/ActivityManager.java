@@ -3,6 +3,7 @@ package be.vubrooster.ejb.managers;
 import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.FacultyServer;
 import be.vubrooster.ejb.models.Activity;
+import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.models.Faculty;
 import be.vubrooster.ejb.models.StudentGroup;
 import org.slf4j.Logger;
@@ -25,17 +26,18 @@ public class ActivityManager {
     // Servers
     public ActivitiyServer activitiyServer = null;
     // Cace
-    public List<Activity> activityList= new ArrayList<>();
+    public List<Activity> activityList = new ArrayList<>();
 
-    public ActivityManager(ActivitiyServer server){
+    public ActivityManager(ActivitiyServer server) {
         activitiyServer = server;
     }
 
     /**
      * Load activities for groups
+     *
      * @return future
      */
-    public List<Activity> loadActivitiesForGroups(List<Activity> activityList){
+    public List<Activity> loadActivitiesForGroups(List<Activity> activityList) {
         this.activityList = activityList;
 
         return activityList;
@@ -43,9 +45,10 @@ public class ActivityManager {
 
     /**
      * Load acitivites for staff
+     *
      * @return future
      */
-    public List<Activity> loadActivitiesForStaff(List<Activity> activityList){
+    public List<Activity> loadActivitiesForStaff(List<Activity> activityList) {
         this.activityList = activityList;
 
         return activityList;
@@ -53,9 +56,10 @@ public class ActivityManager {
 
     /**
      * Load activities for classrooms
+     *
      * @return future
      */
-    public List<Activity> loadActivitiesForClassRooms(List<Activity> activityList){
+    public List<Activity> loadActivitiesForClassRooms(List<Activity> activityList) {
         this.activityList = activityList;
 
         return activityList;
@@ -63,9 +67,10 @@ public class ActivityManager {
 
     /**
      * Load activities for courses
+     *
      * @return future
      */
-    public List<Activity> loadActivitiesForCourses(List<Activity> activityList){
+    public List<Activity> loadActivitiesForCourses(List<Activity> activityList) {
         this.activityList = activityList;
 
         return activityList;
@@ -91,12 +96,14 @@ public class ActivityManager {
             boolean change = false;
             for (StudentGroup group : activity.getGroups()) {
                 // Check if the groups are added
-                try {
-                    if (existingActivity.addGroup(group) && !change) {
-                        change = true;
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                if (existingActivity.addGroup(group) && !change) {
+                    change = true;
+                }
+            }
+            for (Course course : activity.getCourses()) {
+                // Check if the course is added
+                if (existingActivity.addCourse(course) && !change) {
+                    change = true;
                 }
             }
             if (change) { // You don't know if it was dirty already
@@ -110,16 +117,18 @@ public class ActivityManager {
 
     /**
      * Get activity list
+     *
      * @return activity list
      */
-    public List<Activity> getActivityList(){
+    public List<Activity> getActivityList() {
         return activityList;
     }
 
     /**
      * Parse weeks
+     *
      * @param eventWeeks weeks label
-     * @param weeks weeks array
+     * @param weeks      weeks array
      * @return list of weeks
      */
     public List<Integer> parseWeeks(String eventWeeks, List<Integer> weeks) {

@@ -3,6 +3,8 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.StaffServer;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.StaffMember;
+import be.vubrooster.ejb.models.TimeTable;
+import be.vubrooster.ejb.service.ServiceProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -26,7 +28,7 @@ import java.util.List;
 @Singleton(mappedName = "StaffServer")
 public class StaffServerBean implements StaffServer{
     // Logging
-    private final Logger logger = LoggerFactory.getLogger(ActivityServerBean.class);
+    private final Logger logger = LoggerFactory.getLogger(StaffServerBean.class);
 
     @PersistenceContext(name = "vubrooster")
     private EntityManager entityManager;
@@ -63,8 +65,14 @@ public class StaffServerBean implements StaffServer{
     @Override
     public List<StaffMember> saveStaff(List<StaffMember> staffList) {
         List<StaffMember> savedStaff = new ArrayList<>();
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         for (StaffMember staff : staffList){
-            savedStaff.add((StaffMember) getSession().merge(staff));
+            if (staff.getLastSync() < currentTimeTable.getLastSync()) {
+                logger.info("Removing staff member: " + staff.getName());
+                getSession().delete(entityManager.merge(staff));
+            }else {
+                savedStaff.add((StaffMember) getSession().merge(staff));
+            }
         }
         return savedStaff;
     }

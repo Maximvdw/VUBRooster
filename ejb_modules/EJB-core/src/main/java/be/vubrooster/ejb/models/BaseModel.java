@@ -2,7 +2,6 @@ package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
 
 /**
  * @author Maxim Van de Wynckel
@@ -11,25 +10,25 @@ import java.sql.Date;
  */
 @MappedSuperclass
 public abstract class BaseModel implements Serializable{
-    @Column(name = "DateCreated", nullable = true)
-    private Date dateCreated;
+    @Column(name = "dateCreated")
+    private long dateCreated;
 
-    @Column(name = "DateModified", nullable = true)
-    private Date dateModified;
+    @Column(name = "dateModified")
+    private long dateModified;
 
-    public Date getDateCreated() {
+    public long getDateCreated() {
         return dateCreated;
     }
 
-    public void setDateCreated(Date date) {
+    public void setDateCreated(long date) {
         dateCreated = date;
     }
 
-    public Date getDateModified() {
+    public long getDateModified() {
         return dateModified;
     }
 
-    public void setDateModified(Date date) {
+    public void setDateModified(long date) {
         dateModified = date;
     }
 
@@ -37,11 +36,10 @@ public abstract class BaseModel implements Serializable{
     @PrePersist
     @PreRemove
     protected void prePersist() {
-        Date now = new Date(System.currentTimeMillis());
-        if (dateCreated == null) {
-            dateCreated = now;
+        if (dateCreated == 0) {
+            dateCreated = System.currentTimeMillis();
         }
-        dateModified = now;
+        dateModified = System.currentTimeMillis();
     }
 
     @PostUpdate

@@ -1,8 +1,11 @@
 config: 1
 
 google:
+  enabled: false
   client_secret: ""
+  client_id: ""
   application_name: ""
+  service_file: ""
 
 twitter:
   enabled: false

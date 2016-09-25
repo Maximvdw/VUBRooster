@@ -36,7 +36,7 @@ public interface StudentGroupServer {
      * @param useCache use cache
      * @return studentgroup if found
      */
-    StudentGroup findStudentGroupById(int id, boolean useCache);
+    StudentGroup findStudentGroupById(String id, boolean useCache);
 
     /**
      * Find student group by name

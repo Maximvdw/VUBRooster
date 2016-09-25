@@ -3,6 +3,8 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.ClassRoomServer;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.ClassRoom;
+import be.vubrooster.ejb.models.TimeTable;
+import be.vubrooster.ejb.service.ServiceProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -25,7 +27,7 @@ import java.util.List;
 @Singleton(mappedName = "ClassRoomServer")
 public class ClassRoomServerBean implements ClassRoomServer{
     // Logging
-    private final Logger logger = LoggerFactory.getLogger(ActivityServerBean.class);
+    private final Logger logger = LoggerFactory.getLogger(ClassRoomServerBean.class);
 
     @PersistenceContext(name = "vubrooster")
     private EntityManager entityManager;
@@ -62,8 +64,14 @@ public class ClassRoomServerBean implements ClassRoomServer{
     @Override
     public List<ClassRoom> saveClassRooms(List<ClassRoom> classRoomList) {
         List<ClassRoom> savedClassRooms = new ArrayList<>();
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         for (ClassRoom classRoom : classRoomList){
-            savedClassRooms.add((ClassRoom) getSession().merge(classRoom));
+            if (classRoom.getLastSync() < currentTimeTable.getLastSync()) {
+                logger.info("Removing classroom: " + classRoom.getName());
+                getSession().delete(entityManager.merge(classRoom));
+            }else {
+                savedClassRooms.add((ClassRoom) getSession().merge(classRoom));
+            }
         }
         return savedClassRooms;
     }

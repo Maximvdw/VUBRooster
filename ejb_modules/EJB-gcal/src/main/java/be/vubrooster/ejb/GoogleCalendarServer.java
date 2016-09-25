@@ -18,6 +18,13 @@ public interface GoogleCalendarServer {
     List<GoogleCalendar> findGoogleCalendars();
 
     /**
+     * Find new unsynced google calendars
+     *
+     * @return list of unsynced calendars
+     */
+    List<GoogleCalendar> findNewCalendars();
+
+    /**
      * Synchronize google calendar
      *
      * @param calendar google calendar
@@ -28,4 +35,16 @@ public interface GoogleCalendarServer {
      * Synchronize all google calendars
      */
     void synchronizeGoogleCalendars();
+
+    /**
+     * Check and synchronize new calendars
+     */
+    void synchronizeNewCalendars();
+
+    /**
+     * Create default calendars
+     */
+    void createDefaultCalendars();
+
+    void clearCalendars();
 }

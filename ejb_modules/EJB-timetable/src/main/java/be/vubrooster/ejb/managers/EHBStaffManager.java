@@ -58,9 +58,12 @@ public class EHBStaffManager extends StaffManager{
 
             Element selectElement = doc.getElementById("dlObject");
             List<Element> optionElements = selectElement.children();
+            int idx = 0;
             for (Element optionElement : optionElements) {
                 StaffMember staff = new StaffMember(optionElement.text(), optionElement.attr("value"));
+                staff.setListIdx(idx);
                 addStaff(staff);
+                idx++;
             }
         } catch (Exception ex) {
             logger.warn("Unable to get lectors from site [#3]!");

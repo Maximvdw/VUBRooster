@@ -74,12 +74,15 @@ public class EHBCourseManager extends CourseManager{
 
             Element selectElement = doc.getElementById("dlObject");
             List<Element> optionElements = selectElement.children();
+            int idx = 0;
             for (Element optionElement : optionElements) {
                 Course course = new Course(optionElement.text(), optionElement.attr("value"));
                 course.setLongName(course.getName());
                 String[] nameSplit = course.getName().split("/");
                 course.setName(nameSplit[nameSplit.length-1]);
+                course.setListIdx(idx);
                 addCourse(course);
+                idx++;
             }
         } catch (Exception ex) {
             logger.warn("Unable to get subjects from site [#3]!");

@@ -23,7 +23,7 @@ import java.util.List;
 @Singleton(mappedName = "UserServer")
 public class UserServerBean implements UserServer{
     // Logging
-    private final Logger logger = LoggerFactory.getLogger(ActivityServerBean.class);
+    private final Logger logger = LoggerFactory.getLogger(UserServerBean.class);
 
     @PersistenceContext(name = "vubrooster")
     private EntityManager entityManager;

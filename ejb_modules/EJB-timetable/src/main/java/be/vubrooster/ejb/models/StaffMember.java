@@ -10,21 +10,19 @@ import javax.persistence.*;
 @Cacheable()
 @Table(name = "staff", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "splusId", unique = true),
 })
 @NamedQueries({
         @NamedQuery(name = "findStaff",
                 query = "SELECT s FROM StaffMember s"),
 })
-public class StaffMember extends BaseSyncModel {
+public class StaffMember extends BaseSyncModel implements Comparable<StaffMember>{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private String id = "";
     @Column(name = "name")
     private String name = "";
-    @Column(name = "splusId")
-    private String splusId = "";
+    @Column(name = "listIdx")
+    private int listIdx = 0;
 
     public StaffMember(){
 
@@ -32,20 +30,12 @@ public class StaffMember extends BaseSyncModel {
 
     public StaffMember(String name){
         setName(name);
-        setSplusId(name);
+        setId(name);
     }
 
     public StaffMember(String name, String splusId){
         setName(name);
-        setSplusId(splusId);
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
+        setId(splusId);
     }
 
     public String getName() {
@@ -56,12 +46,12 @@ public class StaffMember extends BaseSyncModel {
         this.name = name;
     }
 
-    public String getSplusId() {
-        return splusId;
+    public String getId() {
+        return id;
     }
 
-    public void setSplusId(String splusId) {
-        this.splusId = splusId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override
@@ -71,12 +61,31 @@ public class StaffMember extends BaseSyncModel {
 
         StaffMember that = (StaffMember) o;
 
-        return splusId != null ? splusId.equals(that.splusId) : that.splusId == null;
+        return id != null ? id.equalsIgnoreCase(that.id) : that.id == null;
 
+    }
+    @Override
+    public int compareTo(StaffMember o) {
+        int idx1 = this.getListIdx();
+        int idx2 = o.getListIdx();
+        if (idx1 == idx2) return 0;
+        else if (idx1 > idx2) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
 
     @Override
     public int hashCode() {
-        return splusId != null ? splusId.hashCode() : 0;
+        return id != null ? id.hashCode() : 0;
+    }
+
+    public int getListIdx() {
+        return listIdx;
+    }
+
+    public void setListIdx(int listIdx) {
+        this.listIdx = listIdx;
     }
 }

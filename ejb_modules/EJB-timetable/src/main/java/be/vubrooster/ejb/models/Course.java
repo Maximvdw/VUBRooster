@@ -13,7 +13,6 @@ import java.util.List;
 @Table(name = "courses", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
         @Index(name = "i2", columnList = "name", unique = false),
-        @Index(name = "i3", columnList = "splusId", unique = true),
         @Index(name = "i4", columnList = "longName", unique = false),
 })
 @NamedQueries({
@@ -22,17 +21,16 @@ import java.util.List;
         @NamedQuery(name = "findCourseById", query = "SELECT c FROM Course c WHERE c.id = :id"),
         @NamedQuery(name = "findCourseByName", query = "SELECT c FROM Course c WHERE c.name = :name"),
 })
-public class Course extends BaseSyncModel {
+public class Course extends BaseSyncModel implements Comparable<Course>{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private String id = "";
     @Column(name = "name")
     private String name = "";
     @Column(name = "longName")
     private String longName = "";
-    @Column(name = "splusId")
-    private String splusId = "";
+    @Column(name = "listIdx")
+    private int listIdx = 0;
     @Transient
     private List<CourseVariant> variations = new ArrayList<CourseVariant>();
 
@@ -42,12 +40,12 @@ public class Course extends BaseSyncModel {
 
     public Course(String name, String splusId){
         setName(name);
-        setSplusId(splusId);
+        setId(splusId);
     }
 
     public Course(String name){
         setName(name);
-        setSplusId(name);
+        setId(name);
     }
 
     public String getName() {
@@ -56,14 +54,6 @@ public class Course extends BaseSyncModel {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public boolean addVariant(CourseVariant variant){
@@ -93,21 +83,34 @@ public class Course extends BaseSyncModel {
 
         Course course = (Course) o;
 
-        return splusId != null ? splusId.equalsIgnoreCase(course.splusId) : course.splusId == null;
+        return id != null ? id.equalsIgnoreCase(course.id) : course.id == null;
 
     }
 
     @Override
+    public int compareTo(Course o) {
+        int idx1 = this.getListIdx();
+        int idx2 = o.getListIdx();
+        if (idx1 == idx2) {
+            return 0;
+        } else if (idx1 > idx2) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
     public int hashCode() {
-        return splusId != null ? splusId.hashCode() : 0;
+        return id != null ? id.hashCode() : 0;
     }
 
-    public String getSplusId() {
-        return splusId;
+    public String getId() {
+        return id;
     }
 
-    public void setSplusId(String splusId) {
-        this.splusId = splusId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getLongName() {
@@ -116,5 +119,13 @@ public class Course extends BaseSyncModel {
 
     public void setLongName(String longName) {
         this.longName = longName;
+    }
+
+    public int getListIdx() {
+        return listIdx;
+    }
+
+    public void setListIdx(int listIdx) {
+        this.listIdx = listIdx;
     }
 }

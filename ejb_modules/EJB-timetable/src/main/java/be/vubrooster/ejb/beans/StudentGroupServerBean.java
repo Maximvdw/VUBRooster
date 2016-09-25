@@ -62,7 +62,7 @@ public class StudentGroupServerBean implements StudentGroupServer {
     }
 
     @Override
-    public StudentGroup findStudentGroupById(int id, boolean useCache) {
+    public StudentGroup findStudentGroupById(String id, boolean useCache) {
         return null;
     }
 
@@ -110,6 +110,7 @@ public class StudentGroupServerBean implements StudentGroupServer {
     public List<StudentGroup> saveStudentGroups(List<StudentGroup> studentGroups) {
         List<StudentGroup> savedStudentGroups = new ArrayList<>();
         StudyProgramServer studyProgramServer = ServiceProvider.getStudyProgramServer();
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         for (StudentGroup group : studentGroups) {
             List<StudyProgram> existingProgrammes = new ArrayList<>();
             for (StudyProgram program : group.getStudyProgrammes()) {
@@ -117,7 +118,12 @@ public class StudentGroupServerBean implements StudentGroupServer {
                 existingProgrammes.add(existingProgram);
             }
             group.setStudyProgrammes(existingProgrammes);
-            savedStudentGroups.add((StudentGroup) getSession().merge(group));
+            if (group.getLastSync() < currentTimeTable.getLastSync()) {
+                logger.info("Removing student group: " + group.getName());
+                entityManager.remove(entityManager.merge(group));
+            }else {
+                savedStudentGroups.add(entityManager.merge(group));
+            }
         }
         return savedStudentGroups;
     }

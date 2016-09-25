@@ -39,20 +39,24 @@ public class User extends BaseModel {
     private String refreshToken = "";
     @Column(name = "defaultTimetable")
     private String defaultTimetable = "";
-    @ManyToMany(cascade = CascadeType.DETACH)
+    @ManyToMany(cascade = CascadeType.DETACH,fetch = FetchType.LAZY)
     @JoinTable(name = "user_studentgroups",
             joinColumns=
             @JoinColumn(name="user_id", referencedColumnName="id"),
             inverseJoinColumns=
-            @JoinColumn(name="studentgroup_id", referencedColumnName="id")
+            @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = {
+                    "user_id", "studentgroup_id" })}
     )
     private List<StudentGroup> groups = new ArrayList<>();
-    @ManyToMany(cascade = CascadeType.DETACH)
+    @ManyToMany(cascade = CascadeType.DETACH,fetch = FetchType.LAZY)
     @JoinTable(name = "user_hiddencourses",
             joinColumns=
             @JoinColumn(name="user_id", referencedColumnName="id"),
             inverseJoinColumns=
-            @JoinColumn(name="course_id", referencedColumnName="id")
+            @JoinColumn(name="course_id", referencedColumnName="id"),
+            uniqueConstraints = { @UniqueConstraint(columnNames = {
+                    "user_id", "course_id" })}
     )
     private List<Course> hiddenCourses = new ArrayList<>();
 

@@ -58,9 +58,12 @@ public class EHBClassRoomManager extends ClassRoomManager{
 
             Element selectElement = doc.getElementById("dlObject");
             List<Element> optionElements = selectElement.children();
+            int idx = 0;
             for (Element optionElement : optionElements) {
                 ClassRoom classRoom = new ClassRoom(optionElement.text(), optionElement.attr("value"));
+                classRoom.setListIdx(idx);
                 addClassRoom(classRoom);
+                idx++;
             }
         } catch (Exception ex) {
             logger.warn("Unable to get classrooms from site [#3]!");

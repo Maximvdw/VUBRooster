@@ -44,10 +44,15 @@ public class StudyProgramManager {
     public StudyProgram addStudyProgram(StudyProgram studyProgram) {
         if (!studyProgramList.contains(studyProgram)) {
             logger.info("\tStudy program: " + studyProgram.getName());
+            studyProgram.setDirty(true);
+            studyProgram.setLastUpdate(System.currentTimeMillis() / 1000);
+            studyProgram.setLastSync(System.currentTimeMillis() / 1000);
             studyProgramList.add(studyProgram);
             return studyProgram;
         }else{
             StudyProgram existingProgram = studyProgramList.get(studyProgramList.indexOf(studyProgram));
+            logger.info("\tStudy program: " + existingProgram.getName());
+            existingProgram.setLastSync(System.currentTimeMillis() / 1000);
             return existingProgram;
         }
     }

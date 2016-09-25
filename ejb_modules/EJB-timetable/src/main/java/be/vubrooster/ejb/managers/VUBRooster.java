@@ -81,11 +81,11 @@ public class VUBRooster extends BaseCore{
 
     @Override
     public long getSyncTimeout() {
-        return 0;
+        return 7;
     }
 
     @Override
     public long getSyncInterval() {
-        return 0;
+        return 30;
     }
 }
