@@ -67,7 +67,7 @@ public class Activity extends BaseSyncModel {
     private long endTimeUnix = 0;
     @Column(name = "day")
     private int day = 0;
-    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "activity_studentgroups",
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),

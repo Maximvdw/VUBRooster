@@ -24,7 +24,7 @@ public class CourseVariant extends BaseSyncModel {
     private int id;
     @Column(name = "name")
     private String name = "";
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "course_id")
     private Course course = null;
     @Column(name = "day")

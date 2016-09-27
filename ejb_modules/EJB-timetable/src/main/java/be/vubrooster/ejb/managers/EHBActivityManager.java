@@ -1,6 +1,7 @@
 package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.ActivitiyServer;
+import be.vubrooster.ejb.CourseServer;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
 import be.vubrooster.utils.HtmlResponse;
@@ -10,6 +11,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -67,8 +69,9 @@ public class EHBActivityManager extends ActivityManager {
         for (List<StudentGroup> chunk : chunkedCourses) {
             for (int i = 0 ; i < 2; i ++) {
                 logger.info("Fetching group timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
-                if (!fetchGroupTimeTable(chunk, timeTable, i)){
+                if (!fetchGroupTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting group timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
+                    i--;
                 }
                 idx++;
             }
@@ -100,8 +103,9 @@ public class EHBActivityManager extends ActivityManager {
         for (List<StaffMember> chunk : chunkedCourses) {
             for (int i = 0 ; i < 2; i ++) {
                 logger.info("Fetching staff timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
-                if (!fetchStaffTimeTable(chunk, timeTable, i)){
+                if (!fetchStaffTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting staff timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
+                    i--;
                 }
                 idx++;
             }
@@ -134,8 +138,9 @@ public class EHBActivityManager extends ActivityManager {
         for (List<ClassRoom> chunk : chunkedCourses) {
             for (int i = 0 ; i < 2; i ++) {
                 logger.info("Fetching location timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
-                if (!fetchClassRoomTimeTable(chunk, timeTable, i)){
+                if (!fetchClassRoomTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
+                    i--;
                 }
                 idx++;
             }
@@ -167,8 +172,9 @@ public class EHBActivityManager extends ActivityManager {
         for (List<Course> chunk : chunkedCourses) {
             for (int i = 0 ; i < 2; i ++) {
                 logger.info("Fetching courses timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
-                if (!fetchCourseTimeTable(chunk, timeTable, i)){
+                if (!fetchCourseTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting courses timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
+                    i--;
                 }
                 idx++;
             }
@@ -259,7 +265,9 @@ public class EHBActivityManager extends ActivityManager {
             List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
             List<Element> subjectTitleElements = timeTableDoc.getElementsByClass("header-2-0-1");
             String startWeek = timeTableDoc.getElementsByClass("header-2-0-5").first().html();
-            timeTable.setStartTimeStamp(formatter.parse(startWeek).getTime() / 1000);
+            if (timeTable.getStartTimeStamp() == 0) {
+                timeTable.setStartTimeStamp(formatter.parse(startWeek).getTime() / 1000);
+            }
             for (int subjectNr = 0; subjectNr < subjectTitleElements.size(); subjectNr++) {
                 Course course = courses.get(subjectNr);
                 if (course != null) {
@@ -559,16 +567,51 @@ public class EHBActivityManager extends ActivityManager {
             Document timeTableDoc = Jsoup.parse(getResponse.getSource());
             List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
             List<Element> subjectTitleElements = timeTableDoc.getElementsByClass("header-2-0-1");
-            String startWeek = timeTableDoc.getElementsByClass("header-2-0-5").first().html();
-            timeTable.setStartTimeStamp(formatter.parse(startWeek).getTime() / 1000);
             for (int groupNr = 0; groupNr < subjectTitleElements.size(); groupNr++) {
                 StudentGroup studentGroup = studentGroups.get(groupNr);
                 if (studentGroup != null) {
                     List<Activity> parsedActivities = parseTimeTable(dayTables,groupNr,timeTable);
+                    CourseServer courseServer = ServiceProvider.getCourseServer();
+                    List<Activity> courseLessActivities = new ArrayList<>();
+                    for (Activity activity : parsedActivities) {
+                        if (activity.getCourses().size() == 0) {
+                            courseLessActivities.add(activity);
+                        }
+                    }
+                    Map<String, Integer> nameCounter = new HashMap<>();
+                    for (Activity activity : courseLessActivities) {
+                        if (nameCounter.containsKey(activity.getName())) {
+                            nameCounter.put(activity.getName(), nameCounter.get(activity.getName()) + 1);
+                        } else {
+                            nameCounter.put(activity.getName(), 1);
+                        }
+                    }
+                    for (Map.Entry<String, Integer> names : nameCounter.entrySet()) {
+                        if (names.getValue() > 1) {
+                            Course course = new Course(names.getKey());
+                            course.setDirty(true);
+                            course.setLastUpdate(System.currentTimeMillis() / 1000);
+                            course.setLastSync(System.currentTimeMillis() / 1000);
+                            course = ServiceProvider.getCourseServer().createCourse(course);
+                            if (!studentGroup.getCourses().contains(course)){
+                                studentGroup.getCourses().add(course);
+                            }
+                        }
+                    }
+                    for (Activity activity : courseLessActivities) {
+                        // Try to match it to an existing course
+                        Course course = courseServer.findCourseByName(activity.getName(), true);
+                        if (course != null) {
+                            activity.getCourses().add(course);
+                        }
+                    }
                     for (Activity activity : parsedActivities){
                         activity.addGroup(studentGroup);
                         addActivity(activity);
                     }
+                    int idx = studentGroups.indexOf(studentGroup);
+                    studentGroups.remove(studentGroup);
+                    studentGroups.add(idx,ServiceProvider.getStudentGroupServer().createStudentGroup(studentGroup));
                 }
             }
             return true;

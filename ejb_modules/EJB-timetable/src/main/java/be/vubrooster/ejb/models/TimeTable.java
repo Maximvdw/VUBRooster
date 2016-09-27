@@ -19,9 +19,10 @@ public class TimeTable implements Serializable {
     private int id;
     private long startTimeStamp = 0;
     private long lastSync = 0;
+    private int version = 2;
 
     public TimeTable(){
-        setStartTimeStamp(System.currentTimeMillis());
+        setStartTimeStamp(0);
     }
 
     public TimeTable(long startDate){
@@ -50,5 +51,13 @@ public class TimeTable implements Serializable {
 
     public void setLastSync(long lastSync) {
         this.lastSync = lastSync;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 }

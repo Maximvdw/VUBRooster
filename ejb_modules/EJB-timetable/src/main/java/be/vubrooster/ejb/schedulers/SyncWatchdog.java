@@ -2,6 +2,7 @@ package be.vubrooster.ejb.schedulers;
 
 import be.vubrooster.ejb.TimeTableServer;
 import be.vubrooster.ejb.enums.SyncState;
+import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.service.ServiceProvider;
 
 /**
@@ -23,7 +24,7 @@ public class SyncWatchdog implements Runnable {
             return;
         }
 
-        long threshold = 1000 * 60 * 5;
+        long threshold = 1000 * 60 * BaseCore.getInstance().getSyncTimeout();
 
         // Check if the sync has been down for some time
         if (System.currentTimeMillis() > syncStartTime + threshold) {

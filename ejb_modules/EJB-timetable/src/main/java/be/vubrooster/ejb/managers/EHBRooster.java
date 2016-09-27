@@ -62,7 +62,8 @@ public class EHBRooster extends BaseCore {
         classRoomServer.saveClassRooms();
         logger.info("Loading timetables for all courses ...");
         ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
-        Future<Void> activityLoadFuture = activitiyServer.loadActivitiesForCourses(true);
+        Future<Void> activityLoadFuture = null;
+        activityLoadFuture = activitiyServer.loadActivitiesForCourses(true);
         while (!activityLoadFuture.isDone()){
             try {
                 Thread.sleep(100);
@@ -106,7 +107,7 @@ public class EHBRooster extends BaseCore {
 
     @Override
     public long getSyncInterval() {
-        return 25;
+        return 60;
     }
 
     public static String getBaseURL() {

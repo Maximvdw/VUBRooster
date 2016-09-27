@@ -100,6 +100,13 @@ public class EHBStudentGroupManager extends StudentGroupManager {
         groupName = groupName.replace("/KO/K", "/K");
         groupName = groupName.replace("/LO/L", "/L");
         groupName = groupName.replace("LSO/","");
+        groupName = groupName.replace("/Radio", "/Ba R");
+        if (groupName.length() == 3) {
+            groupName = groupName.replace("/B", "/Ba B");
+            groupName = groupName.replace("/M", "/Ba M");
+            groupName = groupName.replace("/G", "/Ba G");
+        }
+        groupName = groupName.replace("/PM", "/Ba PM");
         groupName = groupName.replace("/PT", "/Ba PT");
         groupName = groupName.replace("IIM/", "IIM");
         groupName = groupName.replace("1VKP", "1/VKP");

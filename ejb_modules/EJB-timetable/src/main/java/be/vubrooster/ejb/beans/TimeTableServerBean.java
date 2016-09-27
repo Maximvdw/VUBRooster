@@ -3,10 +3,12 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.*;
 import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
+import be.vubrooster.ejb.managers.EHBRooster;
 import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.models.Sync;
 import be.vubrooster.ejb.models.TimeTable;
+import be.vubrooster.ejb.schedulers.RamWatchdog;
 import be.vubrooster.ejb.schedulers.SchedulerManager;
 import be.vubrooster.ejb.schedulers.SyncWatchdog;
 import be.vubrooster.ejb.service.ServiceProvider;
@@ -32,9 +34,9 @@ import java.util.concurrent.TimeUnit;
 @Startup
 @Remote(TimeTableServer.class)
 @Singleton(mappedName = "TimeTableServer")
-@DependsOn({"ActivityServerBean","CourseServerBean","FacultyServerBean"
-        ,"StudentGroupServerBean","TwitterServerBean","ConfigurationServerBean"
-        ,"SyncServerBean","StudyProgramServerBean"})
+@DependsOn({"ActivityServerBean", "CourseServerBean", "FacultyServerBean"
+        , "StudentGroupServerBean", "TwitterServerBean", "ConfigurationServerBean"
+        , "SyncServerBean", "StudyProgramServerBean"})
 public class TimeTableServerBean implements TimeTableServer {
     // Logging
     private final Logger logger = LoggerFactory.getLogger(TimeTableServerBean.class);
@@ -58,7 +60,7 @@ public class TimeTableServerBean implements TimeTableServer {
         logger.info(" (c) Maxim Van de Wynckel 2015-2016");
         logger.info("=====================================");
 
-        baseCore = new VUBRooster();
+        baseCore = new EHBRooster();
 
         // Load configuration
         ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();
@@ -70,6 +72,7 @@ public class TimeTableServerBean implements TimeTableServer {
 
         // Start watchdog
         SchedulerManager.createTask(new SyncWatchdog(), 10, TimeUnit.SECONDS);
+        SchedulerManager.createTask(new RamWatchdog(), 10, TimeUnit.MINUTES);
 
         logger.info("Loading latest sync info ...");
         if (getCurrentTimeTable() == null) {
@@ -85,11 +88,11 @@ public class TimeTableServerBean implements TimeTableServer {
         SchedulerManager.createTask(new Runnable() {
             @Override
             public void run() {
-                if (syncState == SyncState.WAITING) {
+                try {
                     sync();
-                }else{
-                    // Sync skipped
-                    logger.warn("Synchronisation skipped due to still running!");
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                    ServiceProvider.getTwitterServer().postStatus("Sync crashed! Retrying next cycle ... " +  " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
                 }
             }
         }, BaseCore.getInstance().getSyncInterval(), TimeUnit.MINUTES);
@@ -121,6 +124,9 @@ public class TimeTableServerBean implements TimeTableServer {
 
         // Timeout for next sync
         syncState = SyncState.WAITING;
+
+        logger.info("Performing garbage collect ...");
+        System.gc(); // Garbage collect
     }
 
     @Override
