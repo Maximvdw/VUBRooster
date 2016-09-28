@@ -7,7 +7,7 @@
         <properties>
             <!--<property name="hibernate.hbm2ddl.auto" value="create-drop" />-->
             <!--<property name="hibernate.hbm2ddl.auto" value="update" />-->
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
             <property name="hibernate.globally_quoted_identifier" value="true" />
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect"/>
             <property name="hibernate.connection.autocommit" value="false" />

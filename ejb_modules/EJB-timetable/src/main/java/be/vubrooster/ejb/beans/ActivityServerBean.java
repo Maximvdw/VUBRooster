@@ -2,6 +2,7 @@ package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.TimeTableServer;
+import be.vubrooster.ejb.enums.ActivityChangeType;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
@@ -62,21 +63,21 @@ public class ActivityServerBean implements ActivitiyServer {
     @Override
     public List<Activity> findAllActivitiesForStaffMember(StaffMember member) {
         Query query = getSession().getNamedQuery("findAllActivitiesForStaffMember");
-        query.setParameter("staff",member.getId());
+        query.setParameter("staff", member.getId());
         return query.list();
     }
 
     @Override
     public List<Activity> findAllActivitiesForClassRoom(ClassRoom classRoom) {
         Query query = getSession().getNamedQuery("findAllActivitiesForClassRoom");
-        query.setParameter("classRoom",classRoom.getId());
+        query.setParameter("classRoom", classRoom.getId());
         return query.list();
     }
 
     @Override
     public List<Activity> findAllActivitiesForStudentGroup(StudentGroup group) {
         Query query = getSession().getNamedQuery("findAllActivitiesForStudentGroup");
-        query.setParameter("studentGroup",group.getId());
+        query.setParameter("studentGroup", group.getId());
         return query.list();
     }
 
@@ -118,10 +119,10 @@ public class ActivityServerBean implements ActivitiyServer {
         TimeTableServer timeTableServer = ServiceProvider.getTimeTableServer();
         TimeTable currentTimeTable = timeTableServer.getCurrentTimeTable();
 
+        List<Activity> removedActivities = new ArrayList<>();
         List<Activity> savedActivities = new ArrayList<>();
-        int added = 0;
-        int removed = 0;
         try {
+            // Save and remove the activities
             for (Activity activity : activities) {
                 if (activity != null) {
                     if (activity.isDirty()) {
@@ -130,7 +131,6 @@ public class ActivityServerBean implements ActivitiyServer {
                             activity.setDirty(false);
                             logger.info("Added activity: " + activity.getName() + " [" + activity.getBeginTimeUnix() + "]");
                             savedActivities.add(entityManager.merge(activity));
-                            added++;
                         } catch (Exception ex) {
                             logger.error("Unable to sync activity!");
                             ex.printStackTrace();
@@ -140,8 +140,9 @@ public class ActivityServerBean implements ActivitiyServer {
                         // Removed activity
                         try {
                             logger.info("Removed activity: " + activity.getName() + " [" + activity.getBeginTimeUnix() + "]");
-                            entityManager.remove(entityManager.merge(activity));
-                            removed++;
+                            Activity mergedActivity = entityManager.merge(activity);
+                            entityManager.remove(mergedActivity);
+                            removedActivities.add(mergedActivity);
                         } catch (Exception ex) {
                             logger.error("Unable to sync activity!");
                             ex.printStackTrace();
@@ -155,9 +156,66 @@ public class ActivityServerBean implements ActivitiyServer {
                 ServiceProvider.getTimeTableServer().updateTimeTable(entityManager.merge(currentTimeTable));
             }
 
+            logger.info("Checking for activity changes ...");
+            // Check for possible activity changes
+            for (Activity removedActivity : removedActivities) {
+                // For each removed activity, check if one of the new activities is responsible
+                for (Activity addedActivity : savedActivities) {
+                    if (addedActivity.getName().equalsIgnoreCase(removedActivity.getName())) { // Same name
+                        if (addedActivity.getGroupsString().equals(removedActivity.getGroupsString())) { // Same groups
+                            // At this point you can be certain that its a change of activity
+                            if (addedActivity.getWeek() == removedActivity.getWeek()) { // Same week
+                                if (addedActivity.getDay() == removedActivity.getDay()) { // Same day
+                                    if (addedActivity.getBeginTimeUnix() == removedActivity.getBeginTimeUnix()) { // Same time
+                                        if (addedActivity.getEndTimeUnix() == removedActivity.getEndTimeUnix()) { // Same end time
+                                            if (addedActivity.getClassRoom().equalsIgnoreCase(removedActivity.getClassRoom())) { // Same classroom
+                                            } else { // Different location
+                                                ActivityChange change = new ActivityChange();
+                                                change.setNewActivity(addedActivity);
+                                                change.setChangeType(ActivityChangeType.LOCATION);
+                                                entityManager.merge(change);
+                                            }
+                                        }else{
+                                            ActivityChange change = new ActivityChange();
+                                            change.setNewActivity(addedActivity);
+                                            change.setChangeType(ActivityChangeType.ENDTIME);
+                                            entityManager.merge(change);
+                                        }
+                                    } else { // Different time
+                                        ActivityChange change = new ActivityChange();
+                                        change.setNewActivity(addedActivity);
+                                        change.setChangeType(ActivityChangeType.BEGINTIME);
+                                        entityManager.merge(change);
+                                    }
+                                } else { // Different day
+                                    ActivityChange change = new ActivityChange();
+                                    change.setNewActivity(addedActivity);
+                                    change.setChangeType(ActivityChangeType.DAY);
+                                    entityManager.merge(change);
+                                }
+                            } else if (Math.abs(addedActivity.getWeek() - removedActivity.getWeek()) < 2) { // One week change
+                                // Moved activity
+                                ActivityChange change = new ActivityChange();
+                                change.setNewActivity(addedActivity);
+                                change.setChangeType(ActivityChangeType.WEEK);
+                                entityManager.merge(change);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             // Store sync information
-            sync.setAdded(added);
-            sync.setRemoved(removed);
+            sync.setAdded(savedActivities.size());
+            sync.setRemoved(removedActivities.size());
+            if (sync.getRemoved() > 5000) {
+                // Possible sync failure
+                ServiceProvider.getTwitterServer().postStatus("!! Attention required on last sync: Removed " + sync.getRemoved() + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+            } else if (sync.getRemoved() > 500) {
+                // Possible sync failure
+                ServiceProvider.getTwitterServer().postStatus("Possible attention required on last sync: Removed " + sync.getRemoved() + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+            }
             sync.setActivities(getActivitiesCount(false));
             sync.setCourses(ServiceProvider.getCourseServer().getCoursesCount(false));
             sync.setStudentGroups(ServiceProvider.getStudentGroupServer().getStudentGroupsCount(false));

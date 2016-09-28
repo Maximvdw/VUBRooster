@@ -72,6 +72,7 @@ public class EHBActivityManager extends ActivityManager {
                 if (!fetchGroupTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting group timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
+                    idx--;
                 }
                 idx++;
             }
@@ -106,6 +107,7 @@ public class EHBActivityManager extends ActivityManager {
                 if (!fetchStaffTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting staff timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
+                    idx--;
                 }
                 idx++;
             }
@@ -141,6 +143,7 @@ public class EHBActivityManager extends ActivityManager {
                 if (!fetchClassRoomTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
+                    idx--;
                 }
                 idx++;
             }
@@ -154,17 +157,23 @@ public class EHBActivityManager extends ActivityManager {
         TimeTable timeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
 
         List<Course> allCourses = ServiceProvider.getCourseServer().findCourses(true);
+        List<Course> filteredCourses = new ArrayList<>();
+        for (Course c : allCourses){
+            if (!c.getName().equalsIgnoreCase(c.getId())){
+                filteredCourses.add(c);
+            }
+        }
 
         List<List<Course>> chunkedCourses = new ArrayList<>();
-        while (allCourses.size() != 0) {
+        while (filteredCourses.size() != 0) {
             List<Course> chunk = new ArrayList<>();
-            List<Course> remaining = new ArrayList<>(allCourses);
+            List<Course> remaining = new ArrayList<>(filteredCourses);
             for (Course course : remaining) {
                 if (chunk.size() == 1000) {
                     break;
                 }
                 chunk.add(course);
-                allCourses.remove(course);
+                filteredCourses.remove(course);
             }
             chunkedCourses.add(chunk);
         }
@@ -175,6 +184,7 @@ public class EHBActivityManager extends ActivityManager {
                 if (!fetchCourseTimeTable(chunk, timeTable, i+1)){
                     logger.error("Error while getting courses timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
+                    idx--;
                 }
                 idx++;
             }
@@ -282,6 +292,10 @@ public class EHBActivityManager extends ActivityManager {
         } catch (Exception ex) {
             logger.warn("Unable to get timetables!");
             ex.printStackTrace();
+            logger.error("Courses: ");
+            for (Course c : courses){
+                logger.error("\t" + c.getId() + " [" + c.getName() + "]");
+            }
             return false;
         }
     }

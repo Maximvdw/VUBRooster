@@ -67,7 +67,7 @@ public class Activity extends BaseSyncModel {
     private long endTimeUnix = 0;
     @Column(name = "day")
     private int day = 0;
-    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(name = "activity_studentgroups",
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),
@@ -85,6 +85,20 @@ public class Activity extends BaseSyncModel {
     public Activity(String name, String classRoom){
         setName(name);
         setClassRoom(classRoom);
+    }
+
+    @PreUpdate
+    @PrePersist
+    @PreRemove
+    protected void prePersist() {
+        if (groupsString.equals("")){
+            if (groups.size() > 0) {
+                groupsString = groups.get(0).getName();
+                for (int i = 1; i < groups.size(); i++) {
+                    groupsString += ", " + groups.get(i).getName();
+                }
+            }
+        }
     }
 
     public int getId() {

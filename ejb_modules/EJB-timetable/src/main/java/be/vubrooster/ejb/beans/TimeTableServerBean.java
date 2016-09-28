@@ -60,7 +60,7 @@ public class TimeTableServerBean implements TimeTableServer {
         logger.info(" (c) Maxim Van de Wynckel 2015-2016");
         logger.info("=====================================");
 
-        baseCore = new EHBRooster();
+        baseCore = new VUBRooster();
 
         // Load configuration
         ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();

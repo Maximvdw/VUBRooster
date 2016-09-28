@@ -103,7 +103,7 @@ public class CourseServerBean implements CourseServer {
 
     @Override
     public Course createCourse(Course course) {
-        Course savedCourse = (Course) getSession().merge(course);
+        Course savedCourse = entityManager.merge(course);
         if (!courseList.contains(savedCourse)){
             courseList.add(savedCourse);
         }

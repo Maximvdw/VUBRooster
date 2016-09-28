@@ -1,5 +1,7 @@
 package be.vubrooster.ejb.models;
 
+import be.vubrooster.ejb.enums.ActivityChangeType;
+
 import javax.persistence.*;
 
 /**
@@ -9,14 +11,15 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "activitychange")
-public class ActivityChange extends BaseSyncModel {
+public class ActivityChange extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
     @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "activity_id")
-    private Activity activity = null;
+    @JoinColumn(name = "newactivity_id")
+    private Activity newActivity = null;
+    private ActivityChangeType changeType = ActivityChangeType.LOCATION;
 
     public int getId() {
         return id;
@@ -26,11 +29,19 @@ public class ActivityChange extends BaseSyncModel {
         this.id = id;
     }
 
-    public Activity getActivity() {
-        return activity;
+    public ActivityChangeType getChangeType() {
+        return changeType;
     }
 
-    public void setActivity(Activity activity) {
-        this.activity = activity;
+    public void setChangeType(ActivityChangeType changeType) {
+        this.changeType = changeType;
+    }
+
+    public Activity getNewActivity() {
+        return newActivity;
+    }
+
+    public void setNewActivity(Activity newActivity) {
+        this.newActivity = newActivity;
     }
 }
