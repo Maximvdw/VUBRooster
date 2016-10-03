@@ -1,5 +1,7 @@
 package be.vubrooster.ejb.models;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 
 /**
@@ -78,6 +80,12 @@ public class ClassRoom extends BaseSyncModel implements Comparable<ClassRoom>{
         } else {
             return -1;
         }
+    }
+
+    public JsonObjectBuilder toJSON(){
+        return Json.createObjectBuilder()
+                .add("classroom_id",id)
+                .add("name",getName());
     }
 
     @Override

@@ -2,7 +2,6 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.FacultyServer;
 import be.vubrooster.ejb.StudentGroupServer;
-import be.vubrooster.ejb.StudyProgramServer;
 import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.models.Faculty;
 import be.vubrooster.ejb.models.StudentGroup;
@@ -75,8 +74,8 @@ public class EHBStudentGroupManager extends StudentGroupManager {
                 String facultyCode = nameSplit[0];
                 group.setLongName(group.getName());
                 group.setName(filterGroupName(group.getName().substring(facultyCode.length() + 1)));
-                for (StudyProgram studyProgram : studyPrograms){
-                    if (studyProgram.getFaculty().getCode().equals(facultyCode)){
+                for (StudyProgram studyProgram : studyPrograms) {
+                    if (studyProgram.getFaculty().getCode().equals(facultyCode)) {
                         group.addStudyProgram(studyProgram);
                         break;
                     }
@@ -99,7 +98,7 @@ public class EHBStudentGroupManager extends StudentGroupManager {
         groupName = groupName.replace("2BaDig-X-BIT", "2BaDig-X- BIT");
         groupName = groupName.replace("/KO/K", "/K");
         groupName = groupName.replace("/LO/L", "/L");
-        groupName = groupName.replace("LSO/","");
+        groupName = groupName.replace("LSO/", "");
         groupName = groupName.replace("/Radio", "/Ba R");
         if (groupName.length() == 3) {
             groupName = groupName.replace("/B", "/Ba B");
@@ -113,44 +112,47 @@ public class EHBStudentGroupManager extends StudentGroupManager {
         groupName = groupName.replace("2VKP", "2/VKP");
         groupName = groupName.replace("3VKP", "3/VKP");
         groupName = groupName.replace("3BaDig-X S2IT", "3/BaDig-X S2IT");
-        groupName = groupName.replace("1/BE HZ","1/BE HZ ");
-        groupName = groupName.replace("LTAa","Klasgroep LTAa");
-        groupName = groupName.replace("LTAb","Klasgroep LTAb");
-        groupName = groupName.replace("LTA-ERA","ERA LTA");
-        groupName = groupName.replace("LTA-WT","Klasgroep LTA-WT");
-        groupName = groupName.replace("PGD_NCZ","1/LERPGDNCZ");
-        groupName = groupName.replace("Ba AN-2-C","ANI-2D-CULT");
-        groupName = groupName.replace("Ba AN-2-F","ANI-2D-FIL");
-        groupName = groupName.replace("Ba AN-2-P","ANI-2D-POL");
-        groupName = groupName.replace("Ba AN-3-C","ANI-3D-CULT");
-        groupName = groupName.replace("Ba AN-3-F","ANI-3D-FIL");
-        groupName = groupName.replace("Ba AN-3-P","ANI-3D-POL");
-        groupName = groupName.replace("Ba AN-R-C","ANI-R-CULT");
-        groupName = groupName.replace("Ba AN-R-F","ANI-R-FIL");
-        groupName = groupName.replace("Ba AN-R-P","ANI-R-POL");
-
+        groupName = groupName.replace("1/BE HZ", "1/BE HZ ");
+        groupName = groupName.replace("LTAa", "Klasgroep LTAa");
+        groupName = groupName.replace("LTAb", "Klasgroep LTAb");
+        groupName = groupName.replace("LTA-ERA", "ERA LTA");
+        groupName = groupName.replace("LTA-WT", "Klasgroep LTA-WT");
+        groupName = groupName.replace("PGD_NCZ", "1/LERPGDNCZ");
+        groupName = groupName.replace("Ba AN-2-C", "ANI-2D-CULT");
+        groupName = groupName.replace("Ba AN-2-F", "ANI-2D-FIL");
+        groupName = groupName.replace("Ba AN-2-P", "ANI-2D-POL");
+        groupName = groupName.replace("Ba AN-3-C", "ANI-3D-CULT");
+        groupName = groupName.replace("Ba AN-3-F", "ANI-3D-FIL");
+        groupName = groupName.replace("Ba AN-3-P", "ANI-3D-POL");
+        groupName = groupName.replace("Ba AN-R-C", "ANI-R-CULT");
+        groupName = groupName.replace("Ba AN-R-F", "ANI-R-FIL");
+        groupName = groupName.replace("Ba AN-R-P", "ANI-R-POL");
+        groupName = groupName.replace("4/VP-A", "1/VP4-A");
+        groupName = groupName.replace("4/VP-B", "1/VP4-B");
+        groupName = groupName.replace("4/VP-C", "1/VP4-C");
+        groupName = groupName.replace("4/VP-D", "1/VP4-D");
+        groupName = groupName.replace("4/VP-E", "1/VP4-E");
+        groupName = groupName.replace("4/VP-F", "1/VP4-F");
         return groupName;
     }
 
     @Override
     public List<StudentGroup> assignCoursesToGroups(List<StudentGroup> studentGroups) {
         List<Course> courses = ServiceProvider.getCourseServer().findCourses(true);
-        for (StudentGroup group : studentGroups){
+        for (StudentGroup group : studentGroups) {
             String[] groupNameSplit = group.getLongName().split("/");
-            for (Course course : courses){
+            for (Course course : courses) {
                 String[] courseNameSplit = course.getLongName().split("/");
                 // Check if they are the same faculty
-                if (groupNameSplit[0].equals(courseNameSplit[0])){
+                if (groupNameSplit[0].equals(courseNameSplit[0])) {
                     // Check if the group is inside the course name
-                    if (course.getLongName().contains(group.getName() + "@") || course.getLongName().contains(group.getName() + "/")  || course.getLongName().contains(group.getName() + " ")) {
-                        if (!group.getCourses().contains(course)) {
-                            group.getCourses().add(course);
-                        }
+                    if (course.getLongName().contains(group.getName() + "@") || course.getLongName().contains(group.getName() + "/") || course.getLongName().contains(group.getName() + " ")) {
+                        group.addCourse(course);
                     }
                 }
             }
             // Check if there is a group without courses
-            if (group.getCourses().size() == 0){
+            if (group.getCourses().size() == 0) {
                 logger.error("Group without courses: " + group.getName() + " (" + group.getLongName() + ")");
             }
         }

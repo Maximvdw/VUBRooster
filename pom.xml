@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>be.vubrooster</groupId>
-	<artifactId>VUBRooster</artifactId>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>be.vubrooster</groupId>
+    <artifactId>VUBRooster</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
@@ -15,20 +15,28 @@
         <module>ejb_modules/EJB-twitter</module>
         <module>ejb_modules/EJB-user</module>
         <module>ejb_modules/EJB-gcal</module>
+        <module>ejb_modules/EJB-device</module>
 
         <module>web_modules/WEB-api-user</module>
+        <module>web_modules/WEB-api-activity</module>
+        <module>web_modules/WEB-api-faculty</module>
+        <module>web_modules/WEB-api-studyprogram</module>
+        <module>web_modules/WEB-api-studentgroup</module>
+        <module>web_modules/WEB-api-courses</module>
+        <module>web_modules/WEB-api-staff</module>
+        <module>web_modules/WEB-api-locations</module>
 
         <module>ejb_modules/EAR-daemon</module>
     </modules>
-    <name>VUB Rooster Converter</name>
-	<description>VUB Rooster Converter</description>
-	<repositories>
-		<repository>
-			<id>public</id>
-			<name>Public Repositories</name>
-			<url>http://repo.mvdw-software.be/content/studentGroups/public/</url>
-		</repository>
-	</repositories>
+    <name>VUBRooster Converter</name>
+    <description>VUBRooster Converter</description>
+    <repositories>
+        <repository>
+            <id>public</id>
+            <name>Public Repositories</name>
+            <url>http://repo.mvdw-software.be/content/studentGroups/public/</url>
+        </repository>
+    </repositories>
 
     <properties>
         <junit-version>4.12</junit-version>

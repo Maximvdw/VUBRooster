@@ -1,7 +1,6 @@
 package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  * BaseSyncModel
@@ -9,9 +8,10 @@ import java.io.Serializable;
  * @date 13-May-16
  */
 @MappedSuperclass
-public abstract class BaseSyncModel implements Serializable{
+public abstract class BaseSyncModel extends  BaseModel{
     private long lastSync = 0L;
     private long lastUpdate = 0L;
+    private boolean active = true;
 
     @Transient
     private boolean dirty = false;
@@ -38,5 +38,13 @@ public abstract class BaseSyncModel implements Serializable{
 
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

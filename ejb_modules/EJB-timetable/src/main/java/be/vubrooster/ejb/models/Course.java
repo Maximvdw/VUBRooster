@@ -1,5 +1,7 @@
 package be.vubrooster.ejb.models;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,5 +129,12 @@ public class Course extends BaseSyncModel implements Comparable<Course>{
 
     public void setListIdx(int listIdx) {
         this.listIdx = listIdx;
+    }
+
+    public JsonObjectBuilder toJSON(){
+        return Json.createObjectBuilder()
+                .add("course_id",getId())
+                .add("name",getName())
+                .add("long_name",getLongName());
     }
 }

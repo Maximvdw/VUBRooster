@@ -11,14 +11,20 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "activitychange")
+@NamedQueries({
+    @NamedQuery(name = "findActivityChangesForGroup",query = "SELECT ac FROM ActivityChange ac")
+})
 public class ActivityChange extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
-    @ManyToOne(cascade = CascadeType.DETACH)
+    @ManyToOne(cascade = CascadeType.DETACH, optional = true)
     @JoinColumn(name = "newactivity_id")
     private Activity newActivity = null;
+    @ManyToOne(cascade = CascadeType.DETACH, optional = true)
+    @JoinColumn(name = "removedactivity_id")
+    private Activity removedActivity = null;
     private ActivityChangeType changeType = ActivityChangeType.LOCATION;
 
     public int getId() {
@@ -43,5 +49,13 @@ public class ActivityChange extends BaseModel {
 
     public void setNewActivity(Activity newActivity) {
         this.newActivity = newActivity;
+    }
+
+    public Activity getRemovedActivity() {
+        return removedActivity;
+    }
+
+    public void setRemovedActivity(Activity removedActivity) {
+        this.removedActivity = removedActivity;
     }
 }

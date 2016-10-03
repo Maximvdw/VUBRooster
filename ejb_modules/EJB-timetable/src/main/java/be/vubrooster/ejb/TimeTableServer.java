@@ -34,4 +34,10 @@ public interface TimeTableServer {
      * @return sync state
      */
     SyncState getSyncState();
+
+    /**
+     * Is this the first sync
+     * @return sync
+     */
+    boolean firstSync();
 }

@@ -2,7 +2,6 @@ package be.vubrooster.ejb;
 
 import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.models.CourseVariant;
-import be.vubrooster.ejb.models.Faculty;
 
 import java.util.List;
 

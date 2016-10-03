@@ -1,11 +1,10 @@
 package be.vubrooster.ejb.beans;
 
-import be.vubrooster.ejb.*;
+import be.vubrooster.ejb.FacultyServer;
+import be.vubrooster.ejb.TimeTableServer;
 import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.managers.EHBRooster;
-import be.vubrooster.ejb.managers.VUBRooster;
-import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.models.Sync;
 import be.vubrooster.ejb.models.TimeTable;
 import be.vubrooster.ejb.schedulers.RamWatchdog;
@@ -53,18 +52,20 @@ public class TimeTableServerBean implements TimeTableServer {
     private long syncStartTime = 0L;
     private SyncState syncState = SyncState.WAITING;
 
+    private boolean firstSync = false;
+
     @PostConstruct
     public void init() {
         logger.info("=====================================");
-        logger.info(" VUBRooster Converter v1.0");
+        logger.info(" VUBRooster Converter v1.1");
         logger.info(" (c) Maxim Van de Wynckel 2015-2016");
         logger.info("=====================================");
 
-        baseCore = new VUBRooster();
+        baseCore = new EHBRooster();
 
         // Load configuration
-        ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();
-        TwitterServer twitterServer = ServiceProvider.getTwitterServer();
+        be.vubrooster.ejb.ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();
+        be.vubrooster.ejb.TwitterServer twitterServer = ServiceProvider.getTwitterServer();
         if (configurationServer.getBoolean("twitter.enabled")) {
             twitterServer.signIn(configurationServer.getString("twitter.consumerKey"), configurationServer.getString("twitter.consumerSecret"), configurationServer.getString("twitter.accessToken")
                     , configurationServer.getString("twitter.accessTokenSecret"));
@@ -76,6 +77,7 @@ public class TimeTableServerBean implements TimeTableServer {
 
         logger.info("Loading latest sync info ...");
         if (getCurrentTimeTable() == null) {
+            firstSync = true;
             logger.info("No previous sync found! Starting as new installation ...");
             currentTimeTable = new TimeTable();
         }
@@ -90,9 +92,9 @@ public class TimeTableServerBean implements TimeTableServer {
             public void run() {
                 try {
                     sync();
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     ex.printStackTrace();
-                    ServiceProvider.getTwitterServer().postStatus("Sync crashed! Retrying next cycle ... " +  " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+                    ServiceProvider.getTwitterServer().postStatus("Sync crashed! Retrying next cycle ... " + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
                 }
             }
         }, BaseCore.getInstance().getSyncInterval(), TimeUnit.MINUTES);
@@ -152,6 +154,11 @@ public class TimeTableServerBean implements TimeTableServer {
     @Override
     public SyncState getSyncState() {
         return syncState;
+    }
+
+    @Override
+    public boolean firstSync() {
+        return firstSync;
     }
 
     /**

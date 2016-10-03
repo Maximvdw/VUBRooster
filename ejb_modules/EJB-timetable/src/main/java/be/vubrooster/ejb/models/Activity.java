@@ -1,5 +1,8 @@
 package be.vubrooster.ejb.models;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,14 +22,15 @@ import java.util.List;
         @Index(name = "i5", columnList = "day", unique = false),
         @Index(name = "i6", columnList = "beginTimeUnix", unique = false),
         @Index(name = "i7", columnList = "endTimeUnix", unique = false),
+        @Index(name = "i8", columnList = "active", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findActivities",
-                query = "SELECT a FROM Activity a"),
-        @NamedQuery(name = "findActivityById", query = "SELECT a FROM Activity a WHERE a.id = :id"),
-        @NamedQuery(name = "findAllActivitiesForStaffMember",query = "SELECT a FROM Activity a WHERE (a.staff LIKE :staff) ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findAllActivitiesForClassRoom",query = "SELECT a FROM Activity a WHERE (a.classRoom LIKE :classRoom) ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findAllActivitiesForStudentGroup",query = "SELECT a FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup ORDER BY a.beginTimeUnix ASC"),
+                query = "SELECT a FROM Activity a WHERE a.active = true"),
+        @NamedQuery(name = "findActivityById", query = "SELECT a FROM Activity a WHERE a.id = :id AND a.active = true"),
+        @NamedQuery(name = "findAllActivitiesForStaffMember",query = "SELECT a FROM Activity a WHERE (a.staff LIKE :staff) AND a.active = true ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForClassRoom",query = "SELECT a FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.active = true ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForStudentGroup",query = "SELECT a FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.active = true ORDER BY a.beginTimeUnix ASC"),
 })
 public class Activity extends BaseSyncModel {
     @Id
@@ -41,7 +45,7 @@ public class Activity extends BaseSyncModel {
     private String staff = "";
     @Column(name = "groupsString",length = 750)
     private String groupsString = "";
-    @ManyToMany(cascade = CascadeType.REMOVE,fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.DETACH,fetch = FetchType.EAGER)
     @JoinTable(name = "activity_courses",
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),
@@ -67,7 +71,7 @@ public class Activity extends BaseSyncModel {
     private long endTimeUnix = 0;
     @Column(name = "day")
     private int day = 0;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "activity_studentgroups",
             joinColumns=
             @JoinColumn(name="activity_id", referencedColumnName="id"),
@@ -98,6 +102,9 @@ public class Activity extends BaseSyncModel {
                     groupsString += ", " + groups.get(i).getName();
                 }
             }
+        }
+        if (groupsString.length() >= 750){
+            groupsString = groupsString.substring(0,740) + " ...";
         }
     }
 
@@ -264,6 +271,44 @@ public class Activity extends BaseSyncModel {
         result = 31 * result + (int) (endTimeUnix ^ (endTimeUnix >>> 32));
         result = 31 * result + day;
         return result;
+    }
+
+    public JsonObjectBuilder toCompactJSON(){
+        return Json.createObjectBuilder()
+                .add("activity_id",id)
+                .add("summary",getName())
+                .add("location",getClassRoom())
+                .add("start_unix",getBeginTimeUnix())
+                .add("end_unix",getEndTimeUnix())
+                .add("weeks_label",weeksLabel)
+                .add("groups_label",groupsString)
+                .add("staff",getStaff());
+    }
+
+    public JsonObjectBuilder toFullJSON(){
+        JsonArrayBuilder coursesArray = Json.createArrayBuilder();
+        for (Course c : getCourses()){
+            coursesArray.add(c.toJSON());
+        }
+        JsonArrayBuilder groupsArray = Json.createArrayBuilder();
+        for (StudentGroup g : getGroups()){
+            groupsArray.add(g.toCompactJSON());
+        }
+        return Json.createObjectBuilder()
+                .add("activity_id",id)
+                .add("summary",getName())
+                .add("location",getClassRoom())
+                .add("start_unix",getBeginTimeUnix())
+                .add("end_unix",getEndTimeUnix())
+                .add("start_time",getBeginTime())
+                .add("end_time",getEndTime())
+                .add("weeks_label",weeksLabel)
+                .add("groups_label",groupsString)
+                .add("staff",getStaff())
+                .add("week",getWeek())
+                .add("day",getDay())
+                .add("courses",coursesArray)
+                .add("studentgroups",groupsArray);
     }
 
     public String getLessonForm() {

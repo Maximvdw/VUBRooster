@@ -10,7 +10,7 @@ import be.vubrooster.ejb.*;
  * @date 16-Apr-16
  */
 public class ServiceProvider {
-    private static CommonsServer commonsServer;
+    private static be.vubrooster.ejb.CommonsServer commonsServer;
     private static ActivitiyServer activitiyServer;
     private static CourseServer courseServer;
     private static FacultyServer facultyServer;
@@ -18,7 +18,7 @@ public class ServiceProvider {
     private static StudentGroupServer studentGroupServer;
     private static SyncServer syncServer;
     private static TimeTableServer timeTableServer;
-    private static ConfigurationServer configurationServer;
+    private static be.vubrooster.ejb.ConfigurationServer configurationServer;
     private static StaffServer staffServer;
     private static ClassRoomServer classRoomServer;
 
@@ -27,9 +27,9 @@ public class ServiceProvider {
      *
      * @return Commons server
      */
-    public static CommonsServer getCommonsServer() {
+    public static be.vubrooster.ejb.CommonsServer getCommonsServer() {
         if (commonsServer == null) {
-            commonsServer = (CommonsServer) ServiceLocator.doLookup(ServiceLocator.COMMONS_SERVER);
+            commonsServer = (be.vubrooster.ejb.CommonsServer) ServiceLocator.doLookup(ServiceLocator.COMMONS_SERVER);
         }
         return commonsServer;
     }
@@ -123,9 +123,9 @@ public class ServiceProvider {
      *
      * @return configuration server
      */
-    public static ConfigurationServer getConfigurationServer() {
+    public static be.vubrooster.ejb.ConfigurationServer getConfigurationServer() {
         if (configurationServer == null) {
-            configurationServer = (ConfigurationServer) ServiceLocator.doLookup(ServiceLocator.CONFIGURATION_SERVER);
+            configurationServer = (be.vubrooster.ejb.ConfigurationServer) ServiceLocator.doLookup(ServiceLocator.CONFIGURATION_SERVER);
         }
         return configurationServer;
     }

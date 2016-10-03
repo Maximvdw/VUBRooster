@@ -2,17 +2,13 @@ package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.StudentGroupServer;
 import be.vubrooster.ejb.StudyProgramServer;
-import be.vubrooster.ejb.enums.Language;
 import be.vubrooster.ejb.managers.BaseCore;
-import be.vubrooster.ejb.models.*;
+import be.vubrooster.ejb.models.StudentGroup;
+import be.vubrooster.ejb.models.StudyProgram;
+import be.vubrooster.ejb.models.TimeTable;
 import be.vubrooster.ejb.service.ServiceProvider;
-import be.vubrooster.utils.HtmlUtils;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +18,6 @@ import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -63,7 +58,20 @@ public class StudentGroupServerBean implements StudentGroupServer {
 
     @Override
     public StudentGroup findStudentGroupById(String id, boolean useCache) {
-        return null;
+        if (studentGroupList.isEmpty() || !useCache) {
+            // Perform query
+            Query query = getSession().getNamedQuery("findStudentGroupById");
+            query.setParameter("id", id);
+            return (StudentGroup) query.uniqueResult();
+        } else {
+            // Use cache
+            for (StudentGroup studentGroup : studentGroupList) {
+                if (studentGroup.getId().equalsIgnoreCase(id)) {
+                    return studentGroup;
+                }
+            }
+            return null;
+        }
     }
 
     @Override
@@ -110,7 +118,7 @@ public class StudentGroupServerBean implements StudentGroupServer {
     public List<StudentGroup> saveStudentGroups(List<StudentGroup> studentGroups) {
         List<StudentGroup> savedStudentGroups = new ArrayList<>();
         StudyProgramServer studyProgramServer = ServiceProvider.getStudyProgramServer();
-        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+        long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (StudentGroup group : studentGroups) {
             List<StudyProgram> existingProgrammes = new ArrayList<>();
             for (StudyProgram program : group.getStudyProgrammes()) {
@@ -118,8 +126,9 @@ public class StudentGroupServerBean implements StudentGroupServer {
                 existingProgrammes.add(existingProgram);
             }
             group.setStudyProgrammes(existingProgrammes);
-            if (group.getLastSync() < currentTimeTable.getLastSync()) {
+            if (group.getLastSync() < startTime) {
                 logger.info("Removing student group: " + group.getName());
+                group.setActive(false);
                 entityManager.remove(entityManager.merge(group));
             }else {
                 savedStudentGroups.add(entityManager.merge(group));

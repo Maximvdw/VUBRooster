@@ -1,5 +1,7 @@
 package be.vubrooster.ejb.models;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 
 /**
@@ -87,5 +89,11 @@ public class StaffMember extends BaseSyncModel implements Comparable<StaffMember
 
     public void setListIdx(int listIdx) {
         this.listIdx = listIdx;
+    }
+
+    public JsonObjectBuilder toJSON() {
+        return Json.createObjectBuilder()
+                .add("staffmember_id", id)
+                .add("name", getName());
     }
 }

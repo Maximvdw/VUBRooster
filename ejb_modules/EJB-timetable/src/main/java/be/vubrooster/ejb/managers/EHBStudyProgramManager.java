@@ -1,11 +1,9 @@
 package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.FacultyServer;
-import be.vubrooster.ejb.StudentGroupServer;
 import be.vubrooster.ejb.StudyProgramServer;
 import be.vubrooster.ejb.enums.Language;
 import be.vubrooster.ejb.models.Faculty;
-import be.vubrooster.ejb.models.StudentGroup;
 import be.vubrooster.ejb.models.StudyProgram;
 import be.vubrooster.ejb.service.ServiceProvider;
 

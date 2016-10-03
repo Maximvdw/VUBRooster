@@ -16,7 +16,7 @@ import java.util.Map;
  * EHBStaffManager
  * Created by maxim on 23-Sep-16.
  */
-public class EHBStaffManager extends StaffManager{
+public class EHBStaffManager extends StaffManager {
     public EHBStaffManager(StaffServer server) {
         super(server);
     }

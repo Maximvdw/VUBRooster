@@ -32,8 +32,14 @@ public class VUBFacultyManager extends FacultyManager {
     public List<Faculty> loadFaculties(List<Faculty> facultyList) {
         super.loadFaculties(facultyList);
 
-        loadFaculties(Language.DUTCH, baseURLDutch);
-        loadFaculties(Language.ENGLISH, baseURLEnglish);
+        boolean success = false;
+        while (!success){
+            success = loadFaculties(Language.DUTCH, baseURLDutch);
+        }
+        success = false;
+        while (!success){
+            success = loadFaculties(Language.ENGLISH, baseURLEnglish);
+        }
 
         logger.info("Loaded " + facultyList.size() + " faculties!");
         for (Faculty faculty : facultyList) {
@@ -52,7 +58,7 @@ public class VUBFacultyManager extends FacultyManager {
      * @param language language
      * @param url      url to load them from
      */
-    private void loadFaculties(Language language, String url) {
+    private boolean loadFaculties(Language language, String url) {
         try {
             Document facultiesPage = Jsoup
                     .parse(HtmlUtils.sendGetRequest(url, new HashMap<>()).getSource());
@@ -117,8 +123,11 @@ public class VUBFacultyManager extends FacultyManager {
 
                 addFaculty(tempFaculty);
             }
+            return true;
         } catch (Exception ex) {
+            logger.info("Unable to load faculties. Retrying ...");
             ex.printStackTrace();
+            return false;
         }
     }
 

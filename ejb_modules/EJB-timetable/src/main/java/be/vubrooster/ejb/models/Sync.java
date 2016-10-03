@@ -1,5 +1,7 @@
 package be.vubrooster.ejb.models;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -107,5 +109,18 @@ public class Sync implements Serializable {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public JsonObjectBuilder toJSON() {
+		return Json.createObjectBuilder()
+				.add("sync_id", id)
+				.add("time", getTimeStamp())
+				.add("duration",getDuration())
+				.add("total_activities", getActivities())
+				.add("total_added",getAdded())
+				.add("total_removed",getRemoved())
+				.add("total_studentgroups",getStudentGroups())
+				.add("total_courses",getCourses())
+				.add("total_studyprogrammes",getStudyProgrammes());
 	}
 }

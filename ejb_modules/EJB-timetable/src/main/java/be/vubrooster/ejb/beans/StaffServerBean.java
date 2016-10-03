@@ -65,13 +65,15 @@ public class StaffServerBean implements StaffServer{
     @Override
     public List<StaffMember> saveStaff(List<StaffMember> staffList) {
         List<StaffMember> savedStaff = new ArrayList<>();
-        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+        long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (StaffMember staff : staffList){
-            if (staff.getLastSync() < currentTimeTable.getLastSync()) {
+            if (staff.getLastSync() < startTime) {
                 logger.info("Removing staff member: " + staff.getName());
                 getSession().delete(entityManager.merge(staff));
-            }else {
-                savedStaff.add((StaffMember) getSession().merge(staff));
+            }else{
+                if (staff.isDirty()){
+                    savedStaff.add((StaffMember) getSession().merge(staff));
+                }
             }
         }
         return savedStaff;

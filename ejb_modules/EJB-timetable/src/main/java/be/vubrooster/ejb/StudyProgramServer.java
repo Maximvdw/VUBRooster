@@ -1,6 +1,5 @@
 package be.vubrooster.ejb;
 
-import be.vubrooster.ejb.models.StudentGroup;
 import be.vubrooster.ejb.models.StudyProgram;
 
 import java.util.List;

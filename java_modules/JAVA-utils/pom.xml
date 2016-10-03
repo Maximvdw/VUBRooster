@@ -12,5 +12,9 @@
 
     <artifactId>JAVA-utils</artifactId>
 
+    <build>
+        <plugins>
 
+        </plugins>
+    </build>
 </project>

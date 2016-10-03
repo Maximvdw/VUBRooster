@@ -2,8 +2,6 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.CourseServer;
 import be.vubrooster.ejb.models.Course;
-import be.vubrooster.ejb.models.StudentGroup;
-import be.vubrooster.ejb.service.ServiceProvider;
 import be.vubrooster.utils.HtmlResponse;
 import be.vubrooster.utils.HtmlUtils;
 import org.jsoup.Connection;
@@ -11,7 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

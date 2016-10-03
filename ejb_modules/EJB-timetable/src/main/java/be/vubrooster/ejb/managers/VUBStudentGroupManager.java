@@ -42,8 +42,7 @@ public class VUBStudentGroupManager extends StudentGroupManager{
                     }
                     if (existingGroup != null) {
                         for (Course course : activity.getCourses()) {
-                            if (!existingGroup.getCourses().contains(course)) {
-                                existingGroup.getCourses().add(course);
+                            if (!existingGroup.addCourse(course)) {
                                 existingGroup.setDirty(true);
                             }
                         }

@@ -113,7 +113,7 @@ public class CourseServerBean implements CourseServer {
     @Override
     public List<Course> saveCourses(List<Course> courses) {
         List<Course> savedCourses = new ArrayList<>();
-        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+        long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (Course course : courses) {
             if (course.isDirty()) {
                 Course savedCourse = (Course) getSession().merge(course);

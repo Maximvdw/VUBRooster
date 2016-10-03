@@ -3,8 +3,6 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.FacultyServer;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.Faculty;
-import be.vubrooster.ejb.models.TimeTable;
-import be.vubrooster.ejb.service.ServiceProvider;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.slf4j.Logger;

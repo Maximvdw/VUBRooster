@@ -2,6 +2,8 @@ package be.vubrooster.ejb.models;
 
 import be.vubrooster.ejb.enums.Language;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 
 /**
@@ -100,4 +102,13 @@ public class StudyProgram extends BaseSyncModel {
     public int hashCode() {
         return name != null ? name.hashCode() : 0;
     }
+
+	public JsonObjectBuilder toJSON() {
+		return Json.createObjectBuilder()
+				.add("studyprogram_id", id)
+				.add("name", getName())
+				.add("language", getLanguage().name())
+				.add("url",getUrl())
+				.add("faculty",faculty.toJSON());
+	}
 }

@@ -1,20 +1,14 @@
 package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.ActivitiyServer;
-import be.vubrooster.ejb.FacultyServer;
 import be.vubrooster.ejb.models.Activity;
 import be.vubrooster.ejb.models.Course;
-import be.vubrooster.ejb.models.Faculty;
 import be.vubrooster.ejb.models.StudentGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ejb.AccessTimeout;
-import javax.ejb.Asynchronous;
-import javax.ejb.Lock;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * ActivityManager

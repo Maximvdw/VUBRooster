@@ -121,6 +121,8 @@ public class ActivityServerBean implements ActivitiyServer {
 
         List<Activity> removedActivities = new ArrayList<>();
         List<Activity> savedActivities = new ArrayList<>();
+
+        boolean error = false;
         try {
             // Save and remove the activities
             for (Activity activity : activities) {
@@ -134,75 +136,117 @@ public class ActivityServerBean implements ActivitiyServer {
                         } catch (Exception ex) {
                             logger.error("Unable to sync activity!");
                             ex.printStackTrace();
+                            error = true;
                         }
                     }
                     if (activity.getLastSync() < currentTimeTable.getLastSync()) {
                         // Removed activity
                         try {
                             logger.info("Removed activity: " + activity.getName() + " [" + activity.getBeginTimeUnix() + "]");
+                            activity.setActive(false);
                             Activity mergedActivity = entityManager.merge(activity);
-                            entityManager.remove(mergedActivity);
                             removedActivities.add(mergedActivity);
                         } catch (Exception ex) {
                             logger.error("Unable to sync activity!");
                             ex.printStackTrace();
+                            error = true;
                         }
                     }
                 }
             }
+            // Check for errors
+            if (error) {
+                ServiceProvider.getTwitterServer().postStatus("!! Sync saving failure " + (System.currentTimeMillis() / 1000) + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+            }
+
             // Save models
             if (currentTimeTable != null) {
                 currentTimeTable.setLastSync(System.currentTimeMillis() / 1000);
                 ServiceProvider.getTimeTableServer().updateTimeTable(entityManager.merge(currentTimeTable));
             }
 
-            logger.info("Checking for activity changes ...");
-            // Check for possible activity changes
-            for (Activity removedActivity : removedActivities) {
-                // For each removed activity, check if one of the new activities is responsible
-                for (Activity addedActivity : savedActivities) {
-                    if (addedActivity.getName().equalsIgnoreCase(removedActivity.getName())) { // Same name
-                        if (addedActivity.getGroupsString().equals(removedActivity.getGroupsString())) { // Same groups
-                            // At this point you can be certain that its a change of activity
-                            if (addedActivity.getWeek() == removedActivity.getWeek()) { // Same week
-                                if (addedActivity.getDay() == removedActivity.getDay()) { // Same day
-                                    if (addedActivity.getBeginTimeUnix() == removedActivity.getBeginTimeUnix()) { // Same time
-                                        if (addedActivity.getEndTimeUnix() == removedActivity.getEndTimeUnix()) { // Same end time
-                                            if (addedActivity.getClassRoom().equalsIgnoreCase(removedActivity.getClassRoom())) { // Same classroom
-                                            } else { // Different location
+            if (!ServiceProvider.getTimeTableServer().firstSync()) {
+                List<Activity> newActivities = new ArrayList<>(savedActivities);
+                logger.info("Checking for activity changes ...");
+                // Check for possible activity changes
+                for (Activity removedActivity : removedActivities) {
+                    // For each removed activity, check if one of the new activities is responsible
+                    boolean changeFound = false;
+                    for (Activity addedActivity : savedActivities) {
+                        if (addedActivity.getName().equalsIgnoreCase(removedActivity.getName())) { // Same name
+                            if (addedActivity.getGroupsString().equals(removedActivity.getGroupsString())) { // Same groups
+                                // At this point you can be certain that its a change of activity
+                                if (addedActivity.getWeek() == removedActivity.getWeek()) { // Same week
+                                    if (addedActivity.getDay() == removedActivity.getDay()) { // Same day
+                                        if (addedActivity.getBeginTimeUnix() == removedActivity.getBeginTimeUnix()) { // Same time
+                                            if (addedActivity.getEndTimeUnix() == removedActivity.getEndTimeUnix()) { // Same end time
+                                                if (addedActivity.getClassRoom().equalsIgnoreCase(removedActivity.getClassRoom())) { // Same classroom
+                                                    changeFound = false;
+                                                } else { // Different location
+                                                    ActivityChange change = new ActivityChange();
+                                                    change.setRemovedActivity(removedActivity);
+                                                    change.setNewActivity(addedActivity);
+                                                    newActivities.remove(addedActivity);
+                                                    change.setChangeType(ActivityChangeType.LOCATION);
+                                                    entityManager.merge(change);
+                                                    changeFound = true;
+                                                }
+                                            } else {
                                                 ActivityChange change = new ActivityChange();
+                                                change.setRemovedActivity(removedActivity);
                                                 change.setNewActivity(addedActivity);
-                                                change.setChangeType(ActivityChangeType.LOCATION);
+                                                newActivities.remove(addedActivity);
+                                                change.setChangeType(ActivityChangeType.ENDTIME);
                                                 entityManager.merge(change);
+                                                changeFound = true;
                                             }
-                                        }else{
+                                        } else { // Different time
                                             ActivityChange change = new ActivityChange();
                                             change.setNewActivity(addedActivity);
-                                            change.setChangeType(ActivityChangeType.ENDTIME);
+                                            change.setRemovedActivity(removedActivity);
+                                            newActivities.remove(addedActivity);
+                                            change.setChangeType(ActivityChangeType.BEGINTIME);
                                             entityManager.merge(change);
+                                            changeFound = true;
                                         }
-                                    } else { // Different time
+                                    } else { // Different day
                                         ActivityChange change = new ActivityChange();
                                         change.setNewActivity(addedActivity);
-                                        change.setChangeType(ActivityChangeType.BEGINTIME);
+                                        change.setRemovedActivity(removedActivity);
+                                        newActivities.remove(addedActivity);
+                                        change.setChangeType(ActivityChangeType.DAY);
                                         entityManager.merge(change);
+                                        changeFound = true;
                                     }
-                                } else { // Different day
+                                } else if (Math.abs(addedActivity.getWeek() - removedActivity.getWeek()) < 2) { // One week change
+                                    // Moved activity
                                     ActivityChange change = new ActivityChange();
                                     change.setNewActivity(addedActivity);
-                                    change.setChangeType(ActivityChangeType.DAY);
+                                    change.setRemovedActivity(removedActivity);
+                                    change.setChangeType(ActivityChangeType.WEEK);
+                                    newActivities.remove(addedActivity);
                                     entityManager.merge(change);
+                                    changeFound = true;
+                                    break;
                                 }
-                            } else if (Math.abs(addedActivity.getWeek() - removedActivity.getWeek()) < 2) { // One week change
-                                // Moved activity
-                                ActivityChange change = new ActivityChange();
-                                change.setNewActivity(addedActivity);
-                                change.setChangeType(ActivityChangeType.WEEK);
-                                entityManager.merge(change);
-                                break;
                             }
                         }
                     }
+                    if (!changeFound) {
+                        // Removed - no replacement
+                        ActivityChange change = new ActivityChange();
+                        change.setNewActivity(null);
+                        change.setRemovedActivity(removedActivity);
+                        change.setChangeType(ActivityChangeType.REMOVED);
+                        entityManager.merge(change);
+                    }
+                }
+                for (Activity newActivity : newActivities) {
+                    ActivityChange change = new ActivityChange();
+                    change.setNewActivity(newActivity);
+                    change.setRemovedActivity(null);
+                    change.setChangeType(ActivityChangeType.ADDED);
+                    entityManager.merge(change);
                 }
             }
 

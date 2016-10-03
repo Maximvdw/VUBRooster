@@ -1,7 +1,5 @@
 package be.vubrooster.ejb;
 
-import be.vubrooster.ejb.enums.Language;
-import be.vubrooster.ejb.models.Faculty;
 import be.vubrooster.ejb.models.StudentGroup;
 import be.vubrooster.ejb.models.StudyProgram;
 

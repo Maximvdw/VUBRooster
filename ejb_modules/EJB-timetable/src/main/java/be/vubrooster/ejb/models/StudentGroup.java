@@ -1,5 +1,7 @@
 package be.vubrooster.ejb.models;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.List;
 @Table(name = "studentgroups", indexes = {
         @Index(name = "i1", columnList = "id", unique = true),
         @Index(name = "i2", columnList = "name", unique = true),
-        @Index(name = "i4", columnList = "active", unique = false),
+        @Index(name = "i3", columnList = "active", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findStudentGroups",
@@ -39,8 +41,6 @@ public class StudentGroup extends BaseSyncModel implements Comparable<StudentGro
                     "studentgroup_id", "studyprogram_id" })}
     )
 	private List<StudyProgram> studyProgrammes = new ArrayList<>();
-    @Column(name = "active")
-	private boolean active = true;
     @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "studentgroup_courses",
             joinColumns=
@@ -78,14 +78,6 @@ public class StudentGroup extends BaseSyncModel implements Comparable<StudentGro
 		this.name = name;
 	}
 
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
 	public List<Course> getCourses() {
 		return courses;
 	}
@@ -93,6 +85,14 @@ public class StudentGroup extends BaseSyncModel implements Comparable<StudentGro
 	public void setCourses(List<Course> courses) {
 		this.courses = courses;
 	}
+
+    public boolean addCourse(Course course){
+        if (!courses.contains(course)) {
+            courses.add(course);
+            return true;
+        }
+        return false;
+    }
 
 	public boolean addStudyProgram(StudyProgram studyProgram){
 	    if (!studyProgrammes.contains(studyProgram)) {
@@ -169,5 +169,12 @@ public class StudentGroup extends BaseSyncModel implements Comparable<StudentGro
 
     public void setListIdx(int listIdx) {
         this.listIdx = listIdx;
+    }
+
+    public JsonObjectBuilder toCompactJSON(){
+        return Json.createObjectBuilder()
+                .add("studentgroup_id",getId())
+                .add("name",getName())
+                .add("long_name",getLongName());
     }
 }

@@ -98,11 +98,12 @@ public class StudyProgramServerBean implements StudyProgramServer {
     @Override
     public List<StudyProgram> saveStudyProgrammes(List<StudyProgram> studyPrograms) {
         List<StudyProgram> savedProgrammes = new ArrayList<>();
-        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+        long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (StudyProgram program : studyPrograms) {
-            if (program.getLastSync() < currentTimeTable.getLastSync()) {
+            if (program.getLastSync() < startTime) {
                 logger.info("Removing study program: " + program.getName());
-                getSession().delete(entityManager.merge(program));
+                program.setActive(false);
+                entityManager.remove(entityManager.merge(program));
             }else {
                 savedProgrammes.add((StudyProgram) getSession().merge(program));
             }
