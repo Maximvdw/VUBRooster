@@ -11,10 +11,10 @@ import java.util.List;
  */
 public interface CourseServer {
     /**
-     * Get all courses
+     * Get all faculty
      *
      * @param useCache use cache
-     * @return courses collection
+     * @return faculty collection
      */
     List<Course> findCourses(boolean useCache);
 
@@ -25,10 +25,10 @@ public interface CourseServer {
     List<CourseVariant> findCourseVariants();
 
     /**
-     * Get courses count
+     * Get faculty count
      *
      * @param useCache use cache
-     * @return courses count
+     * @return faculty count
      */
     int getCoursesCount(boolean useCache);
 
@@ -58,20 +58,20 @@ public interface CourseServer {
     Course createCourse(Course course);
 
     /**
-     * Save courses
+     * Save faculty
      *
-     * @param courses courses to save
-     * @return list of courses
+     * @param courses faculty to save
+     * @return list of faculty
      */
     List<Course> saveCourses(List<Course> courses);
 
     /**
-     * Load courses and put them in the cache
+     * Load faculty and put them in the cache
      */
     void loadCourses();
 
     /**
-     * Save all cached courses to database
+     * Save all cached faculty to database
      */
     void saveCourses();
 }

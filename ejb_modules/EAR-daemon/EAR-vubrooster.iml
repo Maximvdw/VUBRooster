@@ -38,13 +38,13 @@
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
     <orderEntry type="module" module-name="EJB-timetable" />
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
-    <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.7.2" level="project" />
     <orderEntry type="module" module-name="JAVA-utils" />
     <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:2.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.apache.pdfbox:fontbox:2.0.3" level="project" />
     <orderEntry type="module" module-name="EJB-twitter" />
     <orderEntry type="library" name="Maven: org.twitter4j:twitter4j-core:4.0.5" level="project" />
+    <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.0" level="project" />
     <orderEntry type="module" module-name="EJB-user" />
     <orderEntry type="module" module-name="EJB-config" />
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.17" level="project" />

@@ -26,7 +26,7 @@ public class CourseManager {
     }
 
     /**
-     * Load courses
+     * Load faculty
      * @param courseList
      * @return
      */
@@ -69,7 +69,7 @@ public class CourseManager {
 
     /**
      * Get course list
-     * @return courses
+     * @return faculty
      */
     public List<Course> getCourseList(){
         return courseList;

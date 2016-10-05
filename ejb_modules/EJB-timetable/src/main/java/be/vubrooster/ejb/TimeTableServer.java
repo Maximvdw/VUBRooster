@@ -36,6 +36,12 @@ public interface TimeTableServer {
     SyncState getSyncState();
 
     /**
+     * Set sync state
+     * @param state sync state
+     */
+    void setSyncState(SyncState state);
+
+    /**
      * Is this the first sync
      * @return sync
      */

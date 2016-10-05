@@ -28,7 +28,7 @@ public class VUBStudentGroupManager extends StudentGroupManager{
 
     @Override
     public List<StudentGroup> assignCoursesToGroups(List<StudentGroup> studentGroups) {
-        // Get the courses of the student groups using the activites
+        // Get the faculty of the student groups using the activites
         List<Activity> activityList = ServiceProvider.getActivitiyServer().findActivities(true);
         for (Activity activity : activityList) {
             if (activity != null) {

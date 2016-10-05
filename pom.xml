@@ -22,11 +22,12 @@
         <module>web_modules/WEB-api-faculty</module>
         <module>web_modules/WEB-api-studyprogram</module>
         <module>web_modules/WEB-api-studentgroup</module>
-        <module>web_modules/WEB-api-courses</module>
+        <module>web_modules/WEB-api-course</module>
         <module>web_modules/WEB-api-staff</module>
-        <module>web_modules/WEB-api-locations</module>
+        <module>web_modules/WEB-api-location</module>
 
         <module>ejb_modules/EAR-daemon</module>
+        <module>web_modules/EAR-web-daemon</module>
     </modules>
     <name>VUBRooster Converter</name>
     <description>VUBRooster Converter</description>

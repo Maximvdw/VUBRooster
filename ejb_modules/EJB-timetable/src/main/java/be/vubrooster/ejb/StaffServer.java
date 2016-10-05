@@ -18,6 +18,15 @@ public interface StaffServer {
     List<StaffMember> findStaff(boolean useCache);
 
     /**
+     * Find staff by id
+     *
+     * @param id identifier
+     * @param useCache use cache
+     * @return faculty if found
+     */
+    StaffMember findStaffMemberById(String id, boolean useCache);
+
+    /**
      * Load staff
      */
     void loadStaff();

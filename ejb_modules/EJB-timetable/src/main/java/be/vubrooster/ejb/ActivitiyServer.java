@@ -51,28 +51,28 @@ public interface ActivitiyServer {
     int getActivitiesCount(boolean useCache);
 
     /**
-     * Find activity by id
+     * Find faculty by id
      *
      * @param id identifier
      * @param useCache use cache
-     * @return activity if found
+     * @return faculty if found
      */
     Activity findActivityById(int id, boolean useCache);
 
     /**
      * Find activities by name
      *
-     * @param name name of activity
+     * @param name name of faculty
      * @param useCache use cache
      * @return list of activities
      */
     List<Activity> findActivitiesByName(String name, boolean useCache);
 
     /**
-     * Create activity
+     * Create faculty
      *
-     * @param activity activity to save
-     * @return saved activity
+     * @param activity faculty to save
+     * @return saved faculty
      */
     Activity createActivity(Activity activity);
 
@@ -115,7 +115,7 @@ public interface ActivitiyServer {
     Future loadActivitiesForClassRooms(boolean reloadData);
 
     /**
-     * Load activities for courses
+     * Load activities for faculty
      * @return future
      */
     Future loadActivitiesForCourses(boolean reloadData);

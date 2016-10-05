@@ -356,7 +356,7 @@ public class VUBActivityManager extends ActivityManager {
                             }
                             // Activity
                             Elements eventData = column.getElementsByTag("td");
-                            // Extract activity data
+                            // Extract faculty data
                             String eventName = eventData.get(1).html();
                             String eventClass = eventData.get(2).html();
                             String eventWeeks = eventData.get(timeTableType != TimeTableType.STAFF ? 3 : 4).html();
@@ -400,7 +400,7 @@ public class VUBActivityManager extends ActivityManager {
                                 long weekStart = currentTimeTable.getStartTimeStamp() + ((60 * 60 * 24 * 7) * (week - 1));
                                 // Get the day start time: week + day
                                 long dayStart = weekStart + ((60 * 60 * 24) * (activity.getDay() - 1));
-                                // Get the start time of the activity: day + 8:00 + every half hour
+                                // Get the start time of the faculty: day + 8:00 + every half hour
                                 long startTime = dayStart + (8 * 60 * 60) + ((j - 1) * 30 * 60);
                                 long endTime = startTime + (rowspan * 30 * 60);
 

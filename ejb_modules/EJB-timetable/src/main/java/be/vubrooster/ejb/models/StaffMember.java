@@ -15,7 +15,9 @@ import javax.persistence.*;
 })
 @NamedQueries({
         @NamedQuery(name = "findStaff",
-                query = "SELECT s FROM StaffMember s"),
+                query = "SELECT s FROM StaffMember s WHERE s.active = true"),
+        @NamedQuery(name = "findStaffMemberById",
+                query = "SELECT s FROM StaffMember s WHERE s.id = :id AND s.active = true"),
 })
 public class StaffMember extends BaseSyncModel implements Comparable<StaffMember>{
     @Id

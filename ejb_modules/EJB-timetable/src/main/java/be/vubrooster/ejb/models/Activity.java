@@ -28,9 +28,12 @@ import java.util.List;
         @NamedQuery(name = "findActivities",
                 query = "SELECT a FROM Activity a WHERE a.active = true"),
         @NamedQuery(name = "findActivityById", query = "SELECT a FROM Activity a WHERE a.id = :id AND a.active = true"),
-        @NamedQuery(name = "findAllActivitiesForStaffMember",query = "SELECT a FROM Activity a WHERE (a.staff LIKE :staff) AND a.active = true ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findAllActivitiesForClassRoom",query = "SELECT a FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.active = true ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findAllActivitiesForStudentGroup",query = "SELECT a FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.active = true ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForStaffMember",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.staff LIKE :staff) AND a.active = true GROUP BY a.staff,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForClassRoom",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForStudentGroup",query = "SELECT a,group_concat(a.staff) FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findWeekActivitiesForStaffMember",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.staff LIKE :staff) AND a.week = :week AND a.active = true GROUP BY a.staff,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findWeekActivitiesForClassRoom",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.week = :week AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findWeekActivitiesForStudentGroup",query = "SELECT a,group_concat(a.staff) FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.week = :week AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
 })
 public class Activity extends BaseSyncModel {
     @Id
@@ -280,9 +283,17 @@ public class Activity extends BaseSyncModel {
                 .add("location",getClassRoom())
                 .add("start_unix",getBeginTimeUnix())
                 .add("end_unix",getEndTimeUnix())
+                .add("start_time",getBeginTime())
+                .add("end_time",getEndTime())
                 .add("weeks_label",weeksLabel)
                 .add("groups_label",groupsString)
-                .add("staff",getStaff());
+                .add("lesson_type",getLessonForm())
+                .add("week",getWeek())
+                .add("day",getDay())
+                .add("staff",getStaff())
+                .add("last_sync",getLastSync())
+                .add("last_update",getLastUpdate())
+                .add("active",isActive());
     }
 
     public JsonObjectBuilder toFullJSON(){
@@ -304,9 +315,12 @@ public class Activity extends BaseSyncModel {
                 .add("end_time",getEndTime())
                 .add("weeks_label",weeksLabel)
                 .add("groups_label",groupsString)
-                .add("staff",getStaff())
+                .add("lesson_type",getLessonForm())
                 .add("week",getWeek())
                 .add("day",getDay())
+                .add("staff",getStaff())
+                .add("last_sync",getLastSync())
+                .add("last_update",getLastUpdate())
                 .add("courses",coursesArray)
                 .add("studentgroups",groupsArray);
     }

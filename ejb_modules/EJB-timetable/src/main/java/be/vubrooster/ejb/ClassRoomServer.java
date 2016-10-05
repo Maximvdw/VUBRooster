@@ -19,6 +19,15 @@ public interface ClassRoomServer {
     List<ClassRoom> findClassRooms(boolean useCache);
 
     /**
+     * Find classroom by id
+     *
+     * @param id identifier
+     * @param useCache use cache
+     * @return faculty if found
+     */
+    ClassRoom findClassRoomById(String id, boolean useCache);
+
+    /**
      * Load class rooms
      */
     void loadClassRooms();

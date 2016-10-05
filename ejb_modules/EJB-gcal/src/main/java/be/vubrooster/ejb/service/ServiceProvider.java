@@ -35,7 +35,7 @@ public class ServiceProvider {
     }
 
     /**
-     * Get the activity server
+     * Get the faculty server
      *
      * @return Activity server
      */

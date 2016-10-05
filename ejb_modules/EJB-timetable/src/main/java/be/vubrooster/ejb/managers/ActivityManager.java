@@ -60,7 +60,7 @@ public class ActivityManager {
     }
 
     /**
-     * Load activities for courses
+     * Load activities for faculty
      *
      * @return future
      */
@@ -71,9 +71,9 @@ public class ActivityManager {
     }
 
     /**
-     * Add activity to cache
+     * Add faculty to cache
      *
-     * @param activity activity to add
+     * @param activity faculty to add
      */
     public Activity addActivity(Activity activity) {
         if (activity == null) {
@@ -110,9 +110,9 @@ public class ActivityManager {
     }
 
     /**
-     * Get activity list
+     * Get faculty list
      *
-     * @return activity list
+     * @return faculty list
      */
     public List<Activity> getActivityList() {
         return activityList;

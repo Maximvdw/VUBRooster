@@ -34,6 +34,7 @@ public class SyncWatchdog implements Runnable {
                 // The sync has been running for more than X minutes
                 // forcefully close it
                 // This usually means the server is down and it is retrying ...
+                ServiceProvider.getTimeTableServer().setSyncState(SyncState.CRASHED);
 
                 // Send a tweet to the owner
                 if (!tweetTimeout) {
@@ -56,6 +57,8 @@ public class SyncWatchdog implements Runnable {
                 // The sync is waiting
                 tweetTimeout = false;
             }
+        }else{
+            tweetTimeout = false;
         }
     }
 }

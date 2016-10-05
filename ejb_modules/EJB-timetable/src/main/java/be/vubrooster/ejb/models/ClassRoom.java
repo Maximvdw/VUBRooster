@@ -17,6 +17,8 @@ import javax.persistence.*;
 @NamedQueries({
         @NamedQuery(name = "findClassRooms",
                 query = "SELECT c FROM ClassRoom c"),
+        @NamedQuery(name = "findClassRoomById",
+                query = "SELECT s FROM StaffMember s WHERE s.id = :id AND s.active = true"),
 })
 public class ClassRoom extends BaseSyncModel implements Comparable<ClassRoom>{
     @Id

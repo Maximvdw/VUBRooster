@@ -87,7 +87,7 @@ public interface StudentGroupServer {
     void saveStudentGroups();
 
     /**
-     * Assign courses to groups
+     * Assign faculty to groups
      */
     void assignCoursesToGroups();
 }

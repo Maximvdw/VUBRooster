@@ -10,9 +10,10 @@ import javax.persistence.*;
  * Created by maxim on 18-Sep-16.
  */
 @Entity
-@Table(name = "activitychange")
+@Table(name = "activity_changes")
 @NamedQueries({
-    @NamedQuery(name = "findActivityChangesForGroup",query = "SELECT ac FROM ActivityChange ac")
+        @NamedQuery(name = "findActivityChangesForGroup",query = "SELECT ac FROM ActivityChange ac"),
+        @NamedQuery(name = "findActivityChangeByActivity", query = "SELECT ac FROM ActivityChange ac WHERE ac.removedActivity = :activity OR ac.newActivity = :activity")
 })
 public class ActivityChange extends BaseModel {
     @Id

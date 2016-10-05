@@ -137,7 +137,7 @@ public class CourseServerBean implements CourseServer {
     }
 
     /**
-     * Load courses and put them in the cache
+     * Load faculty and put them in the cache
      */
     @Override
     public void loadCourses() {

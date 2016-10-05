@@ -49,6 +49,24 @@ public class ClassRoomServerBean implements ClassRoomServer{
     }
 
     @Override
+    public ClassRoom findClassRoomById(String id, boolean useCache) {
+        if (classRoomList.isEmpty() || !useCache) {
+            // Perform query
+            Query query = getSession().getNamedQuery("findClassRoomById");
+            query.setParameter("id", id);
+            return (ClassRoom) query.uniqueResult();
+        } else {
+            // Use cache
+            for (ClassRoom o : classRoomList) {
+                if (o.getId().equalsIgnoreCase(id)) {
+                    return o;
+                }
+            }
+            return null;
+        }
+    }
+
+    @Override
     public void loadClassRooms() {
         // Reload database
         classRoomList = findClassRooms(false);

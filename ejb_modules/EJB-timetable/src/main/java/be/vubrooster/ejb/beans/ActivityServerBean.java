@@ -3,6 +3,7 @@ package be.vubrooster.ejb.beans;
 import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.TimeTableServer;
 import be.vubrooster.ejb.enums.ActivityChangeType;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
@@ -63,22 +64,43 @@ public class ActivityServerBean implements ActivitiyServer {
     @Override
     public List<Activity> findAllActivitiesForStaffMember(StaffMember member) {
         Query query = getSession().getNamedQuery("findAllActivitiesForStaffMember");
-        query.setParameter("staff", member.getId());
-        return query.list();
+        query.setParameter("staff", "%" + member.getId() + "%");
+        List<Object[]> objects = query.list();
+        List<Activity> activityList = new ArrayList<>();
+        for (Object[] obj : objects){
+            Activity act = (Activity) obj[0];
+            act.setStaff((String) obj[1]);
+            activityList.add(act);
+        }
+        return activityList;
     }
 
     @Override
     public List<Activity> findAllActivitiesForClassRoom(ClassRoom classRoom) {
         Query query = getSession().getNamedQuery("findAllActivitiesForClassRoom");
-        query.setParameter("classRoom", classRoom.getId());
-        return query.list();
+        query.setParameter("classRoom","%" + classRoom.getId() + "%");
+        List<Object[]> objects = query.list();
+        List<Activity> activityList = new ArrayList<>();
+        for (Object[] obj : objects){
+            Activity act = (Activity) obj[0];
+            act.setStaff((String) obj[1]);
+            activityList.add(act);
+        }
+        return activityList;
     }
 
     @Override
     public List<Activity> findAllActivitiesForStudentGroup(StudentGroup group) {
         Query query = getSession().getNamedQuery("findAllActivitiesForStudentGroup");
         query.setParameter("studentGroup", group.getId());
-        return query.list();
+        List<Object[]> objects = query.list();
+        List<Activity> activityList = new ArrayList<>();
+        for (Object[] obj : objects){
+            Activity act = (Activity) obj[0];
+            act.setStaff((String) obj[1]);
+            activityList.add(act);
+        }
+        return activityList;
     }
 
     @Override
@@ -117,6 +139,11 @@ public class ActivityServerBean implements ActivitiyServer {
     @Override
     public List<Activity> saveActivities(List<Activity> activities, Sync sync) {
         TimeTableServer timeTableServer = ServiceProvider.getTimeTableServer();
+        if (timeTableServer.getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            logger.warn("Sync timeout - cancelling sync");
+            return activities;
+        }
         TimeTable currentTimeTable = timeTableServer.getCurrentTimeTable();
 
         List<Activity> removedActivities = new ArrayList<>();
@@ -140,7 +167,7 @@ public class ActivityServerBean implements ActivitiyServer {
                         }
                     }
                     if (activity.getLastSync() < currentTimeTable.getLastSync()) {
-                        // Removed activity
+                        // Removed faculty
                         try {
                             logger.info("Removed activity: " + activity.getName() + " [" + activity.getBeginTimeUnix() + "]");
                             activity.setActive(false);
@@ -168,14 +195,14 @@ public class ActivityServerBean implements ActivitiyServer {
             if (!ServiceProvider.getTimeTableServer().firstSync()) {
                 List<Activity> newActivities = new ArrayList<>(savedActivities);
                 logger.info("Checking for activity changes ...");
-                // Check for possible activity changes
+                // Check for possible faculty changes
                 for (Activity removedActivity : removedActivities) {
-                    // For each removed activity, check if one of the new activities is responsible
+                    // For each removed faculty, check if one of the new activities is responsible
                     boolean changeFound = false;
                     for (Activity addedActivity : savedActivities) {
                         if (addedActivity.getName().equalsIgnoreCase(removedActivity.getName())) { // Same name
                             if (addedActivity.getGroupsString().equals(removedActivity.getGroupsString())) { // Same groups
-                                // At this point you can be certain that its a change of activity
+                                // At this point you can be certain that its a change of faculty
                                 if (addedActivity.getWeek() == removedActivity.getWeek()) { // Same week
                                     if (addedActivity.getDay() == removedActivity.getDay()) { // Same day
                                         if (addedActivity.getBeginTimeUnix() == removedActivity.getBeginTimeUnix()) { // Same time
@@ -219,7 +246,7 @@ public class ActivityServerBean implements ActivitiyServer {
                                         changeFound = true;
                                     }
                                 } else if (Math.abs(addedActivity.getWeek() - removedActivity.getWeek()) < 2) { // One week change
-                                    // Moved activity
+                                    // Moved faculty
                                     ActivityChange change = new ActivityChange();
                                     change.setNewActivity(addedActivity);
                                     change.setRemovedActivity(removedActivity);

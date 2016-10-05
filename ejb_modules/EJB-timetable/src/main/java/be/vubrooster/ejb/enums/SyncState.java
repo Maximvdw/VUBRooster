@@ -5,5 +5,5 @@ package be.vubrooster.ejb.enums;
  * Created by maxim on 20-Sep-16.
  */
 public enum SyncState {
-    RUNNING, WAITING, SAVING
+    RUNNING, WAITING, SAVING, CRASHED
 }

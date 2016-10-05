@@ -5,6 +5,7 @@ import be.vubrooster.ejb.TimeTableServer;
 import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.managers.EHBRooster;
+import be.vubrooster.ejb.managers.VUBRooster;
 import be.vubrooster.ejb.models.Sync;
 import be.vubrooster.ejb.models.TimeTable;
 import be.vubrooster.ejb.schedulers.RamWatchdog;
@@ -61,7 +62,7 @@ public class TimeTableServerBean implements TimeTableServer {
         logger.info(" (c) Maxim Van de Wynckel 2015-2016");
         logger.info("=====================================");
 
-        baseCore = new EHBRooster();
+        baseCore = new VUBRooster();
 
         // Load configuration
         be.vubrooster.ejb.ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();
@@ -92,6 +93,10 @@ public class TimeTableServerBean implements TimeTableServer {
             public void run() {
                 try {
                     sync();
+                } catch (OutOfMemoryError ex){
+                    System.gc();
+                    ServiceProvider.getTwitterServer().postStatus("Sync crashed! Out of memory! " + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+                    ex.printStackTrace();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     ServiceProvider.getTwitterServer().postStatus("Sync crashed! Retrying next cycle ... " + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
@@ -103,7 +108,7 @@ public class TimeTableServerBean implements TimeTableServer {
     /**
      * Perform a sync
      */
-    public void sync() {
+    public synchronized void sync() {
         logger.info("Performing garbage collect ...");
         System.gc(); // Garbage collect
 
@@ -154,6 +159,11 @@ public class TimeTableServerBean implements TimeTableServer {
     @Override
     public SyncState getSyncState() {
         return syncState;
+    }
+
+    @Override
+    public void setSyncState(SyncState state) {
+        this.syncState = state;
     }
 
     @Override

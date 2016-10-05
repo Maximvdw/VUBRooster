@@ -50,6 +50,24 @@ public class StaffServerBean implements StaffServer{
     }
 
     @Override
+    public StaffMember findStaffMemberById(String id, boolean useCache) {
+        if (staffList.isEmpty() || !useCache) {
+            // Perform query
+            Query query = getSession().getNamedQuery("findStaffMemberById");
+            query.setParameter("id", id);
+            return (StaffMember) query.uniqueResult();
+        } else {
+            // Use cache
+            for (StaffMember o : staffList) {
+                if (o.getId().equalsIgnoreCase(id)) {
+                    return o;
+                }
+            }
+            return null;
+        }
+    }
+
+    @Override
     public void loadStaff() {
         // Reload database
         staffList = findStaff(false);

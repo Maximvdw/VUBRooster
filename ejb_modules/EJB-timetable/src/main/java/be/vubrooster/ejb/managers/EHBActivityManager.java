@@ -1,6 +1,7 @@
 package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.ActivitiyServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
 import be.vubrooster.utils.HtmlResponse;
@@ -73,6 +74,11 @@ public class EHBActivityManager extends ActivityManager {
                     logger.error("Error while getting group timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
                     idx--;
+                    if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                        // Crashed - Do not retry
+                        logger.warn("Sync timeout - cancelling sync");
+                        return getActivityList();
+                    }
                 }
                 idx++;
                 if (debug){
@@ -114,6 +120,11 @@ public class EHBActivityManager extends ActivityManager {
                     logger.error("Error while getting staff timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
                     idx--;
+                    if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                        // Crashed - Do not retry
+                        logger.warn("Sync timeout - cancelling sync");
+                        return getActivityList();
+                    }
                 }
                 idx++;
                 if (debug){
@@ -156,6 +167,11 @@ public class EHBActivityManager extends ActivityManager {
                     logger.error("Error while getting timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
                     i--;
                     idx--;
+                    if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                        // Crashed - Do not retry
+                        logger.warn("Sync timeout - cancelling sync");
+                        return getActivityList();
+                    }
                 }
                 idx++;
                 if (debug){
@@ -208,10 +224,15 @@ public class EHBActivityManager extends ActivityManager {
                 for (int semester = 1; semester <= 2; semester++) {
                     boolean busy = true;
                     while (busy) {
-                        logger.info("Fetching courses timetables for chunk [TERM: " + semester + "] " + finalI  + " / " + (chunkedCourses.size()));
+                        logger.info("Fetching activity timetables for chunk [TERM: " + semester + "] " + finalI  + " / " + (chunkedCourses.size()));
                         if (!fetchCourseTimeTable(chunk, timeTable, semester)) {
-                            logger.error("Error while getting courses timetables for chunk [TERM: " + semester + "] " + finalI + " / " + (chunkedCourses.size()));
+                            logger.error("Error while getting activity timetables for chunk [TERM: " + semester + "] " + finalI + " / " + (chunkedCourses.size()));
                             busy = true;
+                            if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                                // Crashed - Do not retry
+                                logger.warn("Sync timeout - cancelling sync");
+                                return;
+                            }
                         } else {
                             busy = false;
                         }
@@ -341,6 +362,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int subjectNr = 0; subjectNr < subjectTitleElements.size(); subjectNr++) {
                 Course course = courses.get(subjectNr);
                 if (course != null) {
+                    logger.info("Extracting models for course: " + course.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, subjectNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         activity.addCourse(course);
@@ -436,6 +458,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int staffNr = 0; staffNr < subjectTitleElements.size(); staffNr++) {
                 StaffMember staffMember = staffMembers.get(staffNr);
                 if (staffMember != null) {
+                    logger.info("Extracting models for staff member: " + staffMember.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, staffNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         addActivity(activity);
@@ -524,6 +547,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int classNr = 0; classNr < subjectTitleElements.size(); classNr++) {
                 ClassRoom classRoom = classRoomList.get(classNr);
                 if (classRoom != null) {
+                    logger.info("Extracting models for classroom: " + classRoom.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, classNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         addActivity(activity);
@@ -586,7 +610,7 @@ public class EHBActivityManager extends ActivityManager {
                             long weekStart = timeTable.getStartTimeStamp() + ((60 * 60 * 24 * 7) * (week - 1));
                             // Get the day start time: week + day
                             long dayStart = weekStart + ((60 * 60 * 24) * (i - 1));
-                            // Get the start time of the activity: day + 8:00 + every half hour
+                            // Get the start time of the faculty: day + 8:00 + every half hour
                             String[] beginSplit = begin.split(":");
                             String[] endSplit = end.split(":");
                             long startTime = dayStart + (Integer.parseInt(beginSplit[0]) * 60 * 60) + (Integer.parseInt(beginSplit[1]) * 60);
@@ -670,6 +694,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int groupNr = 0; groupNr < subjectTitleElements.size(); groupNr++) {
                 StudentGroup studentGroup = studentGroups.get(groupNr);
                 if (studentGroup != null) {
+                    logger.info("Extracting models for group: " + studentGroup.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, groupNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         activity.addGroup(studentGroup);

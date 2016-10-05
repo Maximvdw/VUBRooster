@@ -22,6 +22,8 @@ public abstract class BaseCore {
 
     public abstract void sync();
 
+    public abstract void fastSync();
+
     public static BaseCore getInstance() {
         return instance;
     }

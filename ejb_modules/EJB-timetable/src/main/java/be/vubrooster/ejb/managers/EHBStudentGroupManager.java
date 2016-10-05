@@ -151,7 +151,7 @@ public class EHBStudentGroupManager extends StudentGroupManager {
                     }
                 }
             }
-            // Check if there is a group without courses
+            // Check if there is a group without faculty
             if (group.getCourses().size() == 0) {
                 logger.error("Group without courses: " + group.getName() + " (" + group.getLongName() + ")");
             }
