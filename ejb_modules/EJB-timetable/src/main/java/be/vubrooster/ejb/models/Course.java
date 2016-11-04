@@ -13,9 +13,9 @@ import java.util.List;
  */
 @Entity
 @Table(name = "courses", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "name", unique = false),
-        @Index(name = "i4", columnList = "longName", unique = false),
+        @Index(name = "i1_courses", columnList = "id", unique = true),
+        @Index(name = "i2_courses", columnList = "name", unique = false),
+        @Index(name = "i4_courses", columnList = "longName", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findCourses",

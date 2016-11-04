@@ -91,101 +91,81 @@ will contain the activity in JSON format.
 You can query the API to get all activities of a specific type.
 One of those types is a student group.
 
-`https://api.vubrooster.be/activity/all?group={group_id}`
+`https://api.vubrooster.be/activity/all/group/{group_id}`
 
 **{group_id}** This is the group id
 
 ### Optional parameters
 `prettyPrint=true` Prints the JSON output in a pretty format
+`week={n}` Get the activities of a specific week {n}
 
 ### Success response
 ```
-[
-  {
-    "activity_id": 3669,
-    "summary": "Onthaal nieuwe studenten",
-    "location": "Q.D, Q.C, Q.A.Van.Geen, Q.B",
-    "start_unix": 1474878600,
-    "end_unix": 1474884000,
-    "start_time": "08:30",
-    "end_time": "10:00",
-    "weeks_label": "2",
-    "groups_label": "",
-    "lesson_type": "",
-    "week": 2,
-    "day": 1,
-    "staff": "",
-    "last_sync": 1475677075,
-    "last_update": 1475677173,
-    "active": true
-  },
-  {
-    "activity_id": 33398,
-    "summary": "Onthaal TEW &amp; HI",
-    "location": "Q.D",
-    "start_unix": 1474889400,
-    "end_unix": 1474894800,
-    "start_time": "11:30",
-    "end_time": "13:00",
-    "weeks_label": "2",
-    "groups_label": "",
-    "lesson_type": "",
-    "week": 2,
-    "day": 1,
-    "staff": "BRANSON Joel",
-    "last_sync": 1475677162,
-    "last_update": 1475677192,
-    "active": true
-  },
-  {
-     ...
-  },
-  ...
-]
+{
+    "amount":96,
+    "week":-1,
+    "querytime":35,
+    "activities":[
+        {
+            "activity_id":3226,
+            "summary":"Final Work - kickoff",
+            "location":"DT/B.2.208",
+            "start_unix":1475485200,
+            "end_unix":1475496000,
+            "start_time":"9:00",
+            "end_time":"12:00",
+            "weeks_label":"2",
+            "groups_label":"3BaMultec-MAW,3BaMultec-AT",
+            "lesson_type":"W",
+            "week":2,
+            "day":1,
+            "staff":"Vermeire Jacob, Vanderzijpen Frauke, Van Den Broek Johan, Tilburgs Stefan, Steyaert Pieter, Phlypo Yorick, Heylen Maarten, Geens Arno,DT/NN/vacature,Dickx Peter,Vermeire Jacob,Vanderzijpen Frauke,Van Den Broek Johan,Tilburgs Stefan,Steyaert Pieter,Phlypo Yorick,Heylen Maarten,DT/NN/vacature,Dickx Peter,Vermeire Jacob,Vanderzijpen Frauke,Van Den Broek Johan,Tilburgs Stefan,Steyaert Pieter,Phlypo Yorick,Heylen Maarten,DT/NN/vacature,Dickx Peter,Vermeire Jacob,Vanderzijpen Frauke,Van Den Broek Johan,Tilburgs Stefan,Steyaert Pieter,Phlypo Yorick,Heylen Maarten, DT/NN/vacature, Dickx Peter",
+            "last_sync":1475712146,
+            "last_update":1475482698,
+            "active":true
+        },
+        {
+            "activity_id":3236,
+            "summary":"Internship",
+            "location":"DT/B.2.208",
+            "start_unix":1476090000,
+            "end_unix":1476093600,
+            "start_time":"9:00",
+            "end_time":"10:00",
+            "weeks_label":"3",
+            "groups_label":"3BaMultec-MAW,3BaMultec-AT",
+            "lesson_type":"W",
+            "week":3,
+            "day":1,
+            "staff":"Dhooge Annick",
+            "last_sync":1475712146,
+            "last_update":1475482698,
+            "active":true
+        },
+        {
+            ...
+        },
+        ...
+    ]
+}
 ```
 
-The activity result does not contain a collection of courses and student groups
-**activity_id** This is the activity identifier
-**summary** This is the activity title/summary
-**location** Location/classroom of the activity
-**start_unix** GMT Unix timestamp when the event starts (in seconds)*
-**end_unix** GMT Unix timestamp when the event ends (in seconds)*
-**start_time** The start time (HH:MM) (not required since you have the unix timestamp - but provided for convenience)
-**end_time** The start time (HH:MM) (not required since you have the unix timestamp - but provided for convenience)
-**weeks_label** The weeks this event is in (format can be a single number, comma separated numbers, range (2-4) or all three combined)
-**groups_label** The groups that have this event (comma separated)
-**lesson_type** Lesson type (usually H or W - but different variations possible)
-**week** Week the event is in (not required since you have the unix timestamp - but provided for convenience)
-**day** Day of the week the event is in (1=Monday,...,7=Sunday) (not required since you have the unix timestamp - but provided for convenience)
-**staff** Staff member(s)
-**last_sync** Last sync in seconds. This is the last time the event was 'CHECKED' with the server
-**last_update** Last update in seconds. This is the last time a 'CHANGE' was made
+**amount** Amount of returned activities
+**week** Queried week (-1 = all weeks)
+**querytime** Time it took to get results in milliseconds
+**activities** This is an array with activity objects (compact: does not contain courses and studentgroups)
 
 ## Getting all activities of a staff member
 You can query the API to get all activities of a specific type.
 One of those types is a staff member.
 
-`https://api.vubrooster.be/activity/all?staff={staff_id}`
+`https://api.vubrooster.be/activity/all/staff/{staff_id}`
 
 **{staff_id}** This is the staff name
 
 ### Optional parameters
 `prettyPrint=true` Prints the JSON output in a pretty format
-
-### Success response
-```
-[
-    {
-        ...
-    },
-    {
-        ...
-    },
-    ...
-]
-```
-
-The activity result is the same as "Getting all activities of a student group"
+`week={n}` Get the activities of a specific week {n}
 
 ## Getting all activities of a location
 You can query the API to get all activities of a specific type.
@@ -197,18 +177,4 @@ One of those types is a location.
 
 ### Optional parameters
 `prettyPrint=true` Prints the JSON output in a pretty format
-
-### Success response
-```
-[
-    {
-        ...
-    },
-    {
-        ...
-    },
-    ...
-]
-```
-
-The activity result is the same as "Getting all activities of a student group"
+`week={n}` Get the activities of a specific week {n}

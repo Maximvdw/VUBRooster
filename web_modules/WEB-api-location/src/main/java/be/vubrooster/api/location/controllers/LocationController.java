@@ -5,6 +5,7 @@ import be.vubrooster.ejb.ClassRoomServer;
 import be.vubrooster.ejb.models.Activity;
 import be.vubrooster.ejb.models.ClassRoom;
 import be.vubrooster.ejb.service.ServiceProvider;
+import be.vubrooster.utils.JSONUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,8 +34,8 @@ public class LocationController {
     @RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
-    ResponseEntity<String> findAllLocations(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent)
-    {
+    ResponseEntity<String> findAllLocations(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
+                                            @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         ClassRoomServer classRoomServer = ServiceProvider.getClassRoomServer();
         List<ClassRoom> classRooomList = classRoomServer.findClassRooms(false);
         JsonArrayBuilder locationsArray = Json.createArrayBuilder();
@@ -42,21 +43,21 @@ public class LocationController {
             locationsArray.add(a.toJSON());
         }
         JsonObject jsonObject = Json.createObjectBuilder()
-                .add("locations",locationsArray).build();
-        return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+                .add("locations", locationsArray).build();
+        return new ResponseEntity<>(prettyPrint ? JSONUtils.prettyPrint(jsonObject) : jsonObject.toString(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
     ResponseEntity<String> findActivityById(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
-                                            @PathVariable("id") long activityId)
-    {
+                                            @PathVariable("id") long activityId,
+                                            @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         ActivitiyServer activityServer = ServiceProvider.getActivitiyServer();
-        Activity activity = activityServer.findActivityById((int) activityId,false);
-        if (activity == null){
+        Activity activity = activityServer.findActivityById((int) activityId, false);
+        if (activity == null) {
             return new ResponseEntity<>("{'error':'No such activity found!'}", HttpStatus.NOT_FOUND);
-        }else{
+        } else {
             JsonObject result = activity.toFullJSON().build();
             return new ResponseEntity<>(result.toString(), HttpStatus.OK);
         }

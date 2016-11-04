@@ -53,7 +53,7 @@ public class FacultyServerBean implements FacultyServer{
     }
 
     @Override
-    public Faculty findFacultyById(int id, boolean useCache) {
+    public Faculty findFacultyById(String id, boolean useCache) {
         if (facultyList.isEmpty() || !useCache){
             // Perform query
             Query query = getSession().getNamedQuery("findFacultyById");
@@ -62,7 +62,7 @@ public class FacultyServerBean implements FacultyServer{
         }else{
             // Use cache
             for (Faculty faculty : facultyList){
-                if (faculty.getId() == id){
+                if (faculty.getId().equalsIgnoreCase("")){
                     return faculty;
                 }
             }
@@ -142,7 +142,7 @@ public class FacultyServerBean implements FacultyServer{
     public List<Faculty> saveFaculties(List<Faculty> faculties) {
         List<Faculty> savedFaculties = new ArrayList<>();
         for (Faculty faculty : faculties){
-            savedFaculties.add((Faculty) getSession().merge(faculty));
+            savedFaculties.add(entityManager.merge(faculty));
         }
         return savedFaculties;
     }

@@ -1,6 +1,7 @@
 package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.ClassRoomServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.ClassRoom;
 import be.vubrooster.ejb.models.TimeTable;
@@ -81,6 +82,11 @@ public class ClassRoomServerBean implements ClassRoomServer{
 
     @Override
     public List<ClassRoom> saveClassRooms(List<ClassRoom> classRoomList) {
+        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            logger.warn("Sync timeout - cancelling sync");
+            return classRoomList;
+        }
         List<ClassRoom> savedClassRooms = new ArrayList<>();
         TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
         for (ClassRoom classRoom : classRoomList){

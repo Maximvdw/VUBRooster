@@ -73,19 +73,19 @@ public class EHBStudentGroupManager extends StudentGroupManager {
                 String[] nameSplit = group.getName().split("/");
                 String facultyCode = nameSplit[0];
                 group.setLongName(group.getName());
-                group.setName(filterGroupName(group.getName().substring(facultyCode.length() + 1)));
-                for (StudyProgram studyProgram : studyPrograms) {
-                    if (studyProgram.getFaculty().getCode().equals(facultyCode)) {
-                        group.addStudyProgram(studyProgram);
+                for (Faculty faculty : faculties){
+                    if (faculty.getCode().equalsIgnoreCase(facultyCode)){
+                        group.setFaculty(faculty);
                         break;
                     }
                 }
+                group.setName(filterGroupName(group.getName().substring(facultyCode.length() + 1)));
                 group.setListIdx(idx);
                 addStudentGroup(group);
                 idx++;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to get student groups from site [#3]!",e);
         }
 
 

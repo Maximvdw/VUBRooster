@@ -2,6 +2,7 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.StudentGroupServer;
 import be.vubrooster.ejb.enums.Language;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
 import be.vubrooster.utils.HtmlUtils;
@@ -94,6 +95,11 @@ public class VUBStudentGroupManager extends StudentGroupManager{
             }
             logger.error("Unable to get student groups '" + language.name() + "' for study program: "
                     + studyProgram.getName() + " [" + faculty.getCode() + "]");
+            if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                // Crashed - Do not retry
+                logger.warn("Sync timeout - cancelling sync");
+                return;
+            }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e1) {

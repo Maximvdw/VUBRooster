@@ -38,6 +38,7 @@
     <orderEntry type="module" module-name="EJB-config" scope="PROVIDED" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: be.vubrooster:EJB-config:ejb-client:client:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.yaml:snakeyaml:1.17" level="project" />
+    <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.0" level="project" />
     <orderEntry type="module" module-name="EJB-twitter" scope="PROVIDED" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: be.vubrooster:EJB-twitter:ejb-client:client:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.twitter4j:twitter4j-core:4.0.5" level="project" />
@@ -53,7 +54,6 @@
     <orderEntry type="library" name="Maven: org.slf4j:jcl-over-slf4j:1.6.4" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.6.4" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
-    <orderEntry type="library" name="Maven: javax.json:javax.json-api:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.7.2" level="project" />
     <orderEntry type="module" module-name="JAVA-utils" />
     <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:2.0.3" level="project" />

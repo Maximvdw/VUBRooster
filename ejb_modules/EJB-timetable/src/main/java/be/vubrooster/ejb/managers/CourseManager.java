@@ -62,6 +62,11 @@ public class CourseManager {
                 existingCourse.setLastUpdate(System.currentTimeMillis() / 1000);
                 existingCourse.setDirty(true);
             }
+            if (existingCourse.getListIdx() != course.getListIdx()){
+                existingCourse.setListIdx(course.getListIdx());
+                existingCourse.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingCourse.setDirty(true);
+            }
             existingCourse.setLastSync(System.currentTimeMillis() / 1000);
             return existingCourse;
         }

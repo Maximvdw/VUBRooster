@@ -82,8 +82,7 @@ public class EHBCourseManager extends CourseManager{
                 idx++;
             }
         } catch (Exception ex) {
-            logger.warn("Unable to get subjects from site [#3]!");
-            ex.printStackTrace();
+            logger.error("Unable to get subjects from site [#3]!",ex);
         }
 
         return getCourseList();

@@ -8,6 +8,7 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
@@ -48,6 +49,7 @@ public class TwitterServerBean implements TwitterServer{
      * Post a tweet on twitter
      * @param status Status tweet
      */
+    @Asynchronous
     public void postStatus(String status){
         if (twitter == null)
             return; // Disabled
@@ -57,6 +59,20 @@ public class TwitterServerBean implements TwitterServer{
             logger.info("Tweet has been send!");
         } catch (TwitterException e) {
             logger.error("Unable to post: " + status);
+        }
+    }
+
+    @Override
+    @Asynchronous
+    public void sendDirectMessage(String to, String message) {
+        if (twitter == null)
+            return; // Disabled
+        logger.info("Sending direct message to: " + to + " ...");
+        try {
+            twitter.sendDirectMessage(to,message);
+            logger.info("Direct message has been send!");
+        } catch (TwitterException e) {
+            logger.error("Unable to send direct message: " + message);
         }
     }
 }

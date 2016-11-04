@@ -40,14 +40,15 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-                    <packagingIncludes>
-                        WEB-INF/lib/facebook*.jar,
-                        WEB-INF/lib/spring-*,WEB-INF/lib/core-*,WEB-INF/lib/JAVA-*.jar,
-                        WEB-INF/lib/EJB-*-client.jar,WEB-INF/lib/javax.mail*.jar,WEB-INF/lib/common*.jar,
-                        WEB-INF/lib/jsoup*.jar,WEB-INF/lib/log4j*.jar,WEB-INF/lib/jconn4*.jar,
-                        WEB-INF/lib/hibernate*.jar,**/*.xml,**/*.properties,**/*.class,**/*.png,
-                        **/*.gif,**/*.css,**/*.js,**/*.jsp,**/*.jpg
-                    </packagingIncludes>
+                    <!--<packagingIncludes>-->
+                        <!--WEB-INF/lib/facebook*.jar,-->
+                        <!--WEB-INF/lib/spring-*,WEB-INF/lib/core-*,WEB-INF/lib/JAVA-*.jar,-->
+                        <!--WEB-INF/lib/EJB-*-client.jar,WEB-INF/lib/javax.mail*.jar,WEB-INF/lib/common*.jar,-->
+                        <!--WEB-INF/lib/jsoup*.jar,WEB-INF/lib/log4j*.jar,WEB-INF/lib/jconn4*.jar,-->
+                        <!--WEB-INF/lib/hibernate*.jar,**/*.xml,**/*.properties,**/*.class,**/*.png,-->
+                        <!--**/*.gif,**/*.css,**/*.js,**/*.jsp,**/*.jpg-->
+                    <!--</packagingIncludes>-->
+                    <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
                     <warSourceDirectory>${basedir}/src/main/webapp</warSourceDirectory>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <webResources>

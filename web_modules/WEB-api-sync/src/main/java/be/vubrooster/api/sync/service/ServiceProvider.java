@@ -1,4 +1,4 @@
-package be.vubrooster.api.activity.service;
+package be.vubrooster.api.sync.service;
 
 
 import be.vubrooster.ejb.*;
@@ -11,7 +11,7 @@ import be.vubrooster.ejb.service.ServiceLocator;
  * @date 16-Apr-16
  */
 public class ServiceProvider {
-    private static be.vubrooster.ejb.CommonsServer commonsServer;
+    private static CommonsServer commonsServer;
     private static ActivitiyServer activitiyServer;
     private static CourseServer courseServer;
     private static FacultyServer facultyServer;
@@ -27,15 +27,15 @@ public class ServiceProvider {
      *
      * @return Commons server
      */
-    public static be.vubrooster.ejb.CommonsServer getCommonsServer() {
+    public static CommonsServer getCommonsServer() {
         if (commonsServer == null) {
-            commonsServer = (be.vubrooster.ejb.CommonsServer) ServiceLocator.doLookup(ServiceLocator.COMMONS_SERVER);
+            commonsServer = (CommonsServer) ServiceLocator.doLookup(ServiceLocator.COMMONS_SERVER);
         }
         return commonsServer;
     }
 
     /**
-     * Get the activity server
+     * Get the faculty server
      *
      * @return Activity server
      */

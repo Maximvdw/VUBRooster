@@ -25,6 +25,9 @@
         <module>web_modules/WEB-api-course</module>
         <module>web_modules/WEB-api-staff</module>
         <module>web_modules/WEB-api-location</module>
+        <module>web_modules/WEB-api-timetable</module>
+        <module>web_modules/WEB-api-sync</module>
+        <module>web_modules/WEB-api-resto</module>
 
         <module>ejb_modules/EAR-daemon</module>
         <module>web_modules/EAR-web-daemon</module>

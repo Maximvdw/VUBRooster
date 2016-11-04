@@ -35,6 +35,11 @@ public class SyncServerBean implements SyncServer{
     }
 
     @Override
+    public Sync findSyncById(int id) {
+        return null;
+    }
+
+    @Override
     public long getSyncsCount() {
         return findSyncs().size();
     }

@@ -22,6 +22,7 @@ public class ServiceLocator {
     public static String GCAL_SERVER = "java:global/EAR-vubrooster/EJB-user/GoogleCalendarServerBean";
     public static String CLASSROOM_SERVER = "java:global/EAR-vubrooster/EJB-timetable/ClassRoomServerBean";
     public static String STAFF_SERVER = "java:global/EAR-vubrooster/EJB-timetable/StaffServerBean";
+    public static String DAYMENU_SERVER = "java:global/EAR-vubrooster/EJB-timetable/DayMenuServerBean";
 
     public static Object doLookup(String name){
         try {

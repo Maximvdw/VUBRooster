@@ -69,7 +69,7 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
 //                clearCalendars();
 //                createDefaultCalendars();
             }
-        }, 5, TimeUnit.MINUTES);
+        }, 12, TimeUnit.HOURS);
     }
 
     /**
@@ -139,26 +139,26 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
     @Override
     public void synchronizeGoogleCalendar(GoogleCalendar calendar) {
         // Get the credentials
-        GoogleCredential appCredential = getAppCredentials();
-        GoogleCredential credential = getCredentials(calendar.getUser());
-        try {
-            Calendar appClient = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), new GsonFactory(), appCredential).setApplicationName(getApplicationName()).build();
-            Calendar userClient = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), new GsonFactory(), credential).setApplicationName(getApplicationName()).build();
-            com.google.api.services.calendar.model.Calendar googleCalendar = null;
-            if (calendar.getGoogleCalendarId().equals("")) {
-                // Create a new calendar
-                googleCalendar = createNewCalendar(appClient, calendar.getGoogleCalendarName());
-            } else {
-                // Try looking for an existing calendar
-                CalendarListEntry existingCalendar = appClient.calendarList().get(calendar.getGoogleCalendarId()).execute();
-                if (existingCalendar == null) {
-                    // Does no longer exist!
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        GoogleCredential appCredential = getAppCredentials();
+//        GoogleCredential credential = getCredentials(calendar.getUser());
+//        try {
+//            Calendar appClient = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), new GsonFactory(), appCredential).setApplicationName(getApplicationName()).build();
+//            Calendar userClient = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), new GsonFactory(), credential).setApplicationName(getApplicationName()).build();
+//            com.google.api.services.calendar.model.Calendar googleCalendar = null;
+//            if (calendar.getGoogleCalendarId().equals("")) {
+//                // Create a new calendar
+//                googleCalendar = createNewCalendar(appClient, calendar.getGoogleCalendarName());
+//            } else {
+//                // Try looking for an existing calendar
+//                CalendarListEntry existingCalendar = appClient.calendarList().get(calendar.getGoogleCalendarId()).execute();
+//                if (existingCalendar == null) {
+//                    // Does no longer exist!
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -182,6 +182,7 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
         Event event = new Event()
                 .setSummary(activity.getName())
                 .setLocation(activity.getClassRoom())
+                .setCreated(new DateTime(System.currentTimeMillis()))
                 .setDescription("A chance to hear more about Google's developer products.");
 
         DateTime startDateTime = new DateTime(activity.getBeginTimeUnix() * 1000);
@@ -195,14 +196,6 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
                 .setDateTime(endDateTime)
                 .setTimeZone("Europe/Brussels");
         event.setEnd(end);
-
-        EventReminder[] reminderOverrides = new EventReminder[]{
-                new EventReminder().setMethod("popup").setMinutes(10),
-        };
-        Event.Reminders reminders = new Event.Reminders()
-                .setUseDefault(false)
-                .setOverrides(Arrays.asList(reminderOverrides));
-        event.setReminders(reminders);
 
         return event;
     }
@@ -232,11 +225,10 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
             Calendar appClient = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), new GsonFactory(), appCredential).setApplicationName(getApplicationName()).build();
             List<CalendarListEntry> calendarList = appClient.calendarList().list().execute().getItems();
 
-
-
             // Get staff members
             List<StaffMember> staffMembers = ServiceProvider.getStaffServer().findStaff(false);
             for (StaffMember member : staffMembers) {
+                logger.debug("Creating STAFF google calendar for: " + member.getName());
                 CalendarListEntry existingCalendar = null;
                 for (CalendarListEntry entry : calendarList) {
                     if (entry.getSummary().equals("STAFF: " + member.getId())) {
@@ -261,7 +253,7 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
                 }
                 if (!googleCalendarId.equals("")) {
                     // Get all activities for member
-                    List<Activity> activityList = ServiceProvider.getActivitiyServer().findAllActivitiesForStaffMember(member);
+                    List<Activity> activityList = ServiceProvider.getActivitiyServer().findAllActivitiesForStaffMember(member,true);
                     for (Activity activity : activityList) {
                         try {
                             Event event = createEvent(activity);
@@ -276,6 +268,7 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
             // Get groups
             List<StudentGroup> groups = ServiceProvider.getStudentGroupServer().findStudentGroups(false);
             for (StudentGroup group : groups) {
+                logger.debug("Creating GROUP google calendar for: " + group.getName());
                 CalendarListEntry existingCalendar = null;
                 for (CalendarListEntry entry : calendarList) {
                     if (entry.getSummary().equals("GROUP: " + group.getId())) {
@@ -293,7 +286,7 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
                 }
                 if (!googleCalendarId.equals("")) {
                     // Get all activities for member
-                    List<Activity> activityList = ServiceProvider.getActivitiyServer().findAllActivitiesForStudentGroup(group);
+                    List<Activity> activityList = ServiceProvider.getActivitiyServer().findAllActivitiesForStudentGroup(group,true);
                     for (Activity activity : activityList) {
                         try {
                             Event event = createEvent(activity);
@@ -311,6 +304,7 @@ public class GoogleCalendarServerBean implements GoogleCalendarServer {
 
     @Override
     public void clearCalendars() {
+        logger.info("Clearing all Google Calendars ...");
         GoogleCredential appCredential = getAppCredentials();
         try {
             Calendar appClient = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(), new GsonFactory(), appCredential).setApplicationName(getApplicationName()).build();

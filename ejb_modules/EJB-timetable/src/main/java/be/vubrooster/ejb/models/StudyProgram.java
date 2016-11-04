@@ -13,8 +13,8 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "studyprogrammes", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "name", unique = true),
+        @Index(name = "i1_studyprogrammes", columnList = "id", unique = true),
+        @Index(name = "i2_studyprogrammes", columnList = "name", unique = false),
 })
 @NamedQueries({
 		@NamedQuery(name = "findStudyProgrammes",
@@ -22,11 +22,10 @@ import javax.persistence.*;
 		@NamedQuery(name = "findStudyProgramById", query = "SELECT sp FROM StudyProgram sp WHERE sp.id = :id"),
 		@NamedQuery(name = "findStudyProgramByName", query = "SELECT sp FROM StudyProgram sp WHERE sp.name = :name"),
 })
-public class StudyProgram extends BaseSyncModel {
+public class StudyProgram extends BaseSyncModel implements Comparable<StudyProgram>{
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-	private int id;
+	private String id = "";
     @Column(name = "name")
 	private String name = "";
     @Column(name = "language")
@@ -36,6 +35,8 @@ public class StudyProgram extends BaseSyncModel {
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "faculty_id")
 	private Faculty faculty = null;
+    @Column(name = "listIdx")
+    private int listIdx = 0;
 
 	public StudyProgram(){
 
@@ -44,14 +45,21 @@ public class StudyProgram extends BaseSyncModel {
 	public StudyProgram(String url, String name, Language language) {
 		setUrl(url);
 		setName(name);
+		setId(getName());
 		setLanguage(language);
 	}
 
-	public int getId() {
+
+    public StudyProgram(String name, String id) {
+        setName(name);
+        setId(id);
+    }
+
+	public String getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -83,11 +91,24 @@ public class StudyProgram extends BaseSyncModel {
 	public boolean equals(Object o) {
 		if (o instanceof StudyProgram) {
 			StudyProgram otherStudy = (StudyProgram) o;
-			if (otherStudy.getName().equals(getName())){
+			if (otherStudy.getId().equalsIgnoreCase(getId())){
 				return true;
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public int compareTo(StudyProgram o) {
+		int idx1 = this.getListIdx();
+		int idx2 = o.getListIdx();
+		if (idx2 == idx1) {
+			return 0;
+		} else if (idx1 > idx2) {
+			return 1;
+		} else {
+			return -1;
+		}
 	}
 
 	public Faculty getFaculty() {
@@ -111,4 +132,12 @@ public class StudyProgram extends BaseSyncModel {
 				.add("url",getUrl())
 				.add("faculty",faculty.toJSON());
 	}
+
+    public int getListIdx() {
+        return listIdx;
+    }
+
+    public void setListIdx(int listIdx) {
+        this.listIdx = listIdx;
+    }
 }

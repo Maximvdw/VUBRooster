@@ -41,6 +41,8 @@ public interface CourseServer {
      */
     Course findCourseByName(String name, boolean useCache);
 
+    void cleanCourses();
+
     /**
      * Find course by id
      * @param id identifier

@@ -4,6 +4,7 @@ import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
+import be.vubrooster.utils.HashUtils;
 import be.vubrooster.utils.HtmlResponse;
 import be.vubrooster.utils.HtmlUtils;
 import org.jsoup.Connection;
@@ -44,6 +45,52 @@ public class EHBActivityManager extends ActivityManager {
 
     public static void setBaseTimeTableURL(String baseTimeTableURL) {
         EHBActivityManager.baseTimeTableURL = baseTimeTableURL;
+    }
+
+    @Override
+    public List<Activity> loadActivitiesForStudyProgram(List<Activity> activityList) {
+        super.loadActivitiesForStudyProgram(activityList);
+        TimeTable timeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+
+        List<StudyProgram> allProgrammes = ServiceProvider.getStudyProgramServer().findStudyProgrammes(true);
+
+        List<List<StudyProgram>> chunkedCourses = new ArrayList<>();
+        while (allProgrammes.size() != 0) {
+            List<StudyProgram> chunk = new ArrayList<>();
+            List<StudyProgram> remaining = new ArrayList<>(allProgrammes);
+            for (StudyProgram group : remaining) {
+                if (chunk.size() == 500) {
+                    break;
+                }
+                chunk.add(group);
+                allProgrammes.remove(group);
+            }
+            chunkedCourses.add(chunk);
+        }
+        int idx = 1;
+        for (List<StudyProgram> chunk : chunkedCourses) {
+            for (int i = 0; i < 2; i++) {
+                logger.info("Fetching study program timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
+                if (!fetchStudyProgramTimeTable(chunk, timeTable, i + 1)) {
+                    logger.error("Error while getting study program timetables for chunk " + idx + " / " + (chunkedCourses.size() * 2));
+                    i--;
+                    idx--;
+                    if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                        // Crashed - Do not retry
+                        logger.warn("Sync timeout - cancelling sync");
+                        return getActivityList();
+                    }
+                }
+                idx++;
+                if (debug){
+                    break;
+                }
+            }
+            if (debug){
+                break;
+            }
+        }
+        return getActivityList();
     }
 
     @Override
@@ -350,6 +397,10 @@ public class EHBActivityManager extends ActivityManager {
 
             logger.info("Downloading timetables ...");
             HtmlResponse getResponse = HtmlUtils.sendGetRequest(getBaseTimeTableURL(), cookies, 240000);
+            if (debug) {
+                logger.info("Saving timetable HTML source to file for double check ...");
+                saveTimetable("courses", HashUtils.md5(conn.toString()), getResponse.getSource());
+            }
             logger.info("Parsing timetables ...");
             Document timeTableDoc = Jsoup.parse(getResponse.getSource());
             List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
@@ -362,7 +413,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int subjectNr = 0; subjectNr < subjectTitleElements.size(); subjectNr++) {
                 Course course = courses.get(subjectNr);
                 if (course != null) {
-                    logger.info("Extracting models for course: " + course.getName());
+                    logger.debug("Extracting models for course: " + course.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, subjectNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         activity.addCourse(course);
@@ -380,13 +431,17 @@ public class EHBActivityManager extends ActivityManager {
             }
             return false;
         } catch (Exception ex) {
-            logger.warn("Unable to get timetables!");
-            ex.printStackTrace();
+            logger.error("Unable to get timetables!",ex);
             if (debug) {
                 logger.error("Courses: ");
                 for (Course c : courses) {
                     logger.error("\t" + c.getId() + " [" + c.getName() + "]");
                 }
+            }
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             return false;
         }
@@ -451,6 +506,10 @@ public class EHBActivityManager extends ActivityManager {
 
             logger.info("Downloading timetables ...");
             HtmlResponse getResponse = HtmlUtils.sendGetRequest(getBaseTimeTableURL(), cookies, 240000);
+            if (debug) {
+                logger.info("Saving timetable HTML source to file for double check ...");
+                saveTimetable("staff", HashUtils.md5(conn.toString()), getResponse.getSource());
+            }
             logger.info("Parsing timetables ...");
             Document timeTableDoc = Jsoup.parse(getResponse.getSource());
             List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
@@ -458,7 +517,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int staffNr = 0; staffNr < subjectTitleElements.size(); staffNr++) {
                 StaffMember staffMember = staffMembers.get(staffNr);
                 if (staffMember != null) {
-                    logger.info("Extracting models for staff member: " + staffMember.getName());
+                    logger.debug("Extracting models for staff member: " + staffMember.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, staffNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         addActivity(activity);
@@ -475,8 +534,12 @@ public class EHBActivityManager extends ActivityManager {
             }
             return false;
         } catch (Exception ex) {
-            logger.warn("Unable to get timetables!");
-            ex.printStackTrace();
+            logger.error("Unable to get timetables!",ex);
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return false;
         }
     }
@@ -540,6 +603,10 @@ public class EHBActivityManager extends ActivityManager {
 
             logger.info("Downloading timetables ...");
             HtmlResponse getResponse = HtmlUtils.sendGetRequest(getBaseTimeTableURL(), cookies, 240000);
+            if (debug) {
+                logger.info("Saving timetable HTML source to file for double check ...");
+                saveTimetable("classrooms", HashUtils.md5(conn.toString()), getResponse.getSource());
+            }
             logger.info("Parsing timetables ...");
             Document timeTableDoc = Jsoup.parse(getResponse.getSource());
             List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
@@ -547,7 +614,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int classNr = 0; classNr < subjectTitleElements.size(); classNr++) {
                 ClassRoom classRoom = classRoomList.get(classNr);
                 if (classRoom != null) {
-                    logger.info("Extracting models for classroom: " + classRoom.getName());
+                    logger.debug("Extracting models for classroom: " + classRoom.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, classNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         addActivity(activity);
@@ -564,68 +631,14 @@ public class EHBActivityManager extends ActivityManager {
             }
             return false;
         } catch (Exception ex) {
-            logger.warn("Unable to get timetables!");
-            ex.printStackTrace();
+            logger.error("Unable to get timetables!",ex);
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return false;
         }
-    }
-
-    public List<Activity> parseTimeTable(List<Element> dayTables, int nr, TimeTable timeTable) {
-        List<Activity> activityList = new ArrayList<>();
-        // Voor elke dag
-        for (int i = 1; i <= 7; i++) {
-            Element dayTable = dayTables.get(i - 1 + (nr * 7));
-            if (dayTable.getElementsByTag("tbody").size() != 0) {
-                Element tbodyElement = dayTable.getElementsByTag("tbody").first();
-                List<Element> rows = tbodyElement.getElementsByTag("tr");
-                // Een dag kan meerdere rijen hebben naargelang overlappingen
-                for (int row = 1; row < rows.size(); row++) {
-                    Element rowElement = rows.get(row);
-                    List<Element> columnElements = rowElement.getElementsByTag("td");
-                    if (columnElements.size() == 9) {
-                        String activity = columnElements.get(0).text();
-                        String lessonForm = columnElements.get(1).text();
-                        String begin = columnElements.get(2).text();
-                        String end = columnElements.get(3).text();
-                        if (!begin.contains(":") || !end.contains(":")) {
-                            logger.error("ERROR: " + activity + " NPE BEGIN/END DATE");
-                        }
-                        String weeks = columnElements.get(5).text();
-                        String staff = columnElements.get(6).text();
-                        String classRoom = columnElements.get(7).text();
-                        String groupsString = columnElements.get(8).text();
-                        List<Integer> weeksList = parseWeeks(weeks, new ArrayList<>());
-                        for (int week : weeksList) {
-                            Activity activityObj = new Activity(activity, classRoom);
-                            activityObj.setLessonForm(lessonForm);
-                            activityObj.setWeeksLabel(weeks);
-                            activityObj.setBeginTime(begin);
-                            activityObj.setEndTime(end);
-                            activityObj.setDay(i);
-                            activityObj.setStaff(staff);
-                            activityObj.setGroupsString(groupsString);
-                            activityObj.setWeek(week);
-                            // Get the start unix time of the week
-                            // It is the start week (fex 19 sep 2016) + week
-                            long weekStart = timeTable.getStartTimeStamp() + ((60 * 60 * 24 * 7) * (week - 1));
-                            // Get the day start time: week + day
-                            long dayStart = weekStart + ((60 * 60 * 24) * (i - 1));
-                            // Get the start time of the faculty: day + 8:00 + every half hour
-                            String[] beginSplit = begin.split(":");
-                            String[] endSplit = end.split(":");
-                            long startTime = dayStart + (Integer.parseInt(beginSplit[0]) * 60 * 60) + (Integer.parseInt(beginSplit[1]) * 60);
-                            long endTime = dayStart + (Integer.parseInt(endSplit[0]) * 60 * 60) + (Integer.parseInt(endSplit[1]) * 60);
-
-                            activityObj.setBeginTimeUnix(startTime);
-                            activityObj.setEndTimeUnix(endTime);
-
-                            activityList.add(activityObj);
-                        }
-                    }
-                }
-            }
-        }
-        return activityList;
     }
 
     public boolean fetchGroupTimeTable(List<StudentGroup> studentGroups, TimeTable timeTable, int semester) {
@@ -687,6 +700,10 @@ public class EHBActivityManager extends ActivityManager {
 
             logger.info("Downloading timetables ...");
             HtmlResponse getResponse = HtmlUtils.sendGetRequest(getBaseTimeTableURL(), cookies, 240000);
+            if (debug) {
+                logger.info("Saving timetable HTML source to file for double check ...");
+                saveTimetable("studentgroups", HashUtils.md5(conn.toString()), getResponse.getSource());
+            }
             logger.info("Parsing timetables ...");
             Document timeTableDoc = Jsoup.parse(getResponse.getSource());
             List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
@@ -694,7 +711,7 @@ public class EHBActivityManager extends ActivityManager {
             for (int groupNr = 0; groupNr < subjectTitleElements.size(); groupNr++) {
                 StudentGroup studentGroup = studentGroups.get(groupNr);
                 if (studentGroup != null) {
-                    logger.info("Extracting models for group: " + studentGroup.getName());
+                    logger.debug("Extracting models for group: " + studentGroup.getName());
                     List<Activity> parsedActivities = parseTimeTable(dayTables, groupNr, timeTable);
                     for (Activity activity : parsedActivities) {
                         activity.addGroup(studentGroup);
@@ -712,10 +729,188 @@ public class EHBActivityManager extends ActivityManager {
             }
             return false;
         } catch (Exception ex) {
-            logger.warn("Unable to get timetables!");
-            ex.printStackTrace();
+            logger.error("Unable to get timetables!",ex);
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return false;
         }
+    }
+
+    public boolean fetchStudyProgramTimeTable(List<StudyProgram> studyProgramList, TimeTable timeTable, int semester) {
+        SimpleDateFormat formatter = new SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("NL"));
+        // Set GMT timezone to avoid problems with daylight savings
+        // Clients/frontends should deal with this depending on their location
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        try {
+            Collections.sort(studyProgramList);
+            Connection.Response res = null;
+
+            // Get cookies again if lost
+            res = Jsoup.connect(getBaseURL()).userAgent(userAgent).timeout(60000).method(Connection.Method.GET).execute();
+            if (res == null) {
+                logger.warn("Unable to get EHB study program from site!");
+            }
+
+            Document docCookieFetch = res.parse();
+            if (docCookieFetch == null) {
+                logger.warn("Unable to get EHB study program from site!");
+            }
+
+            // Required for cookie saving
+            String VIEWSTATE = docCookieFetch.getElementById("__VIEWSTATE").attr("value");
+            String EVENTVALIDATION = (docCookieFetch.getElementById("__EVENTVALIDATION").attr("value"));
+            Map<String, String> cookies = res.cookies();
+
+            res = Jsoup.connect(getBaseURL()).maxBodySize(12000000).userAgent(userAgent).timeout(60000).data("__EVENTTARGET", "LinkBtn_ProgrammesOfStudy")
+                    .data("__EVENTARGUMENT", "").data("__LASTFOCUS", "").data("__VIEWSTATE", VIEWSTATE)
+                    .data("__EVENTVALIDATION", EVENTVALIDATION).data("tLinkType", "ProgrammesOfStudy")
+                    .data("dlFilter", "").data("tWildcard", "").data("lbWeeks", "t").data("lbDays", "1-7")
+                    .data("dlPeriod", "1-56").data("RadioType", "Individual%3Bswsurl%3BSWS_EHB_IND").cookies(cookies)
+                    .method(Connection.Method.POST).followRedirects(true).execute();
+            Document doc = res.parse();
+            if (doc == null) {
+                logger.warn("Unable to get study programmes from site [#1]!");
+                return false;
+            }
+
+
+            VIEWSTATE = doc.getElementById("__VIEWSTATE").attr("value");
+            EVENTVALIDATION = doc.getElementById("__EVENTVALIDATION").attr("value");
+            Connection conn = Jsoup.connect(getBaseURL()).maxBodySize(12000000).userAgent(userAgent).timeout(60000).data("__EVENTTARGET", "")
+                    .data("__EVENTARGUMENT", "").data("__LASTFOCUS", "").data("__VIEWSTATE", VIEWSTATE)
+                    .data("__EVENTVALIDATION", EVENTVALIDATION).data("tLinkType", "ProgrammesOfStudy").data("dlFilter", "").data("tWildcard", "").data("lbWeeks", getWeeks(semester)).data("lbDays", "1-7")
+                    .data("dlPeriod", "1-56").data("RadioType", "TextSpreadsheet;swsurl;SWS_EHB_TS")
+                    .data("bGetTimetable", "Toon+rooster").cookies(cookies).method(Connection.Method.POST);
+            for (StudyProgram studyProgram : studyProgramList) {
+                conn.data("dlObject", studyProgram.getId());
+            }
+
+            res = conn.execute();
+            doc = res.parse();
+            if (doc == null) {
+                logger.warn("Unable to get study programmes timetable from site [#2]!");
+                return false;
+            }
+
+            logger.info("Downloading timetables ...");
+            HtmlResponse getResponse = HtmlUtils.sendGetRequest(getBaseTimeTableURL(), cookies, 240000);
+            if (debug) {
+                logger.info("Saving timetable HTML source to file for double check ...");
+                saveTimetable("studyprogrammes", HashUtils.md5(conn.toString()), getResponse.getSource());
+            }
+            logger.info("Parsing timetables ...");
+            Document timeTableDoc = Jsoup.parse(getResponse.getSource());
+            List<Element> dayTables = timeTableDoc.getElementsByClass("spreadsheet");
+            List<Element> subjectTitleElements = timeTableDoc.getElementsByClass("header-2-0-1");
+            for (int groupNr = 0; groupNr < subjectTitleElements.size(); groupNr++) {
+                StudyProgram studyProgram = studyProgramList.get(groupNr);
+                if (studyProgram != null) {
+                    logger.debug("Extracting models for study program: " + studyProgram.getName());
+                    List<Activity> parsedActivities = parseTimeTable(dayTables, groupNr, timeTable);
+                    for (Activity activity : parsedActivities) {
+                        Activity addedActivity = addActivity(activity);
+                        addedActivity.addStudyProgram(studyProgram);
+                        for (StudentGroup group : addedActivity.getGroups()){
+                            StudentGroup existingGroup = ServiceProvider.getStudentGroupServer().findStudentGroupById(group.getId(),true);
+                            existingGroup.addStudyProgram(studyProgram);
+                            ServiceProvider.getStudentGroupServer().updateStudentGroup(existingGroup);
+                        }
+                    }
+                }
+            }
+            return true;
+        } catch (NullPointerException ex){
+            logger.warn("Unable to get timetables - Error on site!");
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return false;
+        } catch (Exception ex) {
+            logger.error("Unable to get timetables!",ex);
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Parse a list of day elements
+     * @param dayTables day tables elements
+     * @param nr
+     * @param timeTable current timetimeable
+     * @return
+     */
+    public List<Activity> parseTimeTable(List<Element> dayTables, int nr, TimeTable timeTable) {
+        List<Activity> activityList = new ArrayList<>();
+        // Voor elke dag
+        for (int i = 1; i <= 7; i++) {
+            Element dayTable = dayTables.get(i - 1 + (nr * 7));
+            if (dayTable.getElementsByTag("tbody").size() != 0) {
+                Element tbodyElement = dayTable.getElementsByTag("tbody").first();
+                List<Element> rows = tbodyElement.getElementsByTag("tr");
+                // Een dag kan meerdere rijen hebben naargelang overlappingen
+                for (int row = 1; row < rows.size(); row++) {
+                    Element rowElement = rows.get(row);
+                    List<Element> columnElements = rowElement.getElementsByTag("td");
+                    if (columnElements.size() == 9) {
+                        String activity = columnElements.get(0).text();
+                        String lessonForm = columnElements.get(1).text();
+                        String begin = columnElements.get(2).text();
+                        String end = columnElements.get(3).text();
+                        if (!begin.contains(":") || !end.contains(":")) {
+                            logger.error("ERROR: " + activity + " NPE BEGIN/END DATE");
+                        }
+                        String weeks = columnElements.get(5).text();
+                        String staff = columnElements.get(6).text();
+                        String classRoom = columnElements.get(7).text();
+                        String groupsString = columnElements.get(8).text();
+                        List<Integer> weeksList = parseWeeks(weeks, new ArrayList<>());
+                        for (int week : weeksList) {
+                            Activity activityObj = new Activity(activity, classRoom);
+                            activityObj.setLessonForm(lessonForm);
+                            activityObj.setWeeksLabel(weeks);
+                            activityObj.setBeginTime(begin);
+                            activityObj.setEndTime(end);
+                            activityObj.setDay(i);
+                            activityObj.setStaff(staff);
+                            activityObj.setGroupsString(groupsString);
+                            activityObj.setWeek(week);
+                            // Parse staff members
+                            List<String> staffMemberNames = parseStaffMembers(staff,new ArrayList<>());
+                            for (String staffMemberName : staffMemberNames){
+
+                            }
+
+                            // Get the start unix time of the week
+                            // It is the start week (fex 19 sep 2016) + week
+                            long weekStart = timeTable.getStartTimeStamp() + ((60 * 60 * 24 * 7) * (week - 1));
+                            // Get the day start time: week + day
+                            long dayStart = weekStart + ((60 * 60 * 24) * (i - 1));
+                            // Get the start time of the faculty: day + 8:00 + every half hour
+                            String[] beginSplit = begin.split(":");
+                            String[] endSplit = end.split(":");
+                            long startTime = dayStart + (Integer.parseInt(beginSplit[0]) * 60 * 60) + (Integer.parseInt(beginSplit[1]) * 60);
+                            long endTime = dayStart + (Integer.parseInt(endSplit[0]) * 60 * 60) + (Integer.parseInt(endSplit[1]) * 60);
+
+                            activityObj.setBeginTimeUnix(startTime);
+                            activityObj.setEndTimeUnix(endTime);
+
+                            activityList.add(activityObj);
+                        }
+                    }
+                }
+            }
+        }
+        return activityList;
     }
 
     public String getWeeks(int semester) {

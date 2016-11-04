@@ -3,6 +3,7 @@ package be.vubrooster.api.studentgroup.controllers;
 import be.vubrooster.ejb.StudentGroupServer;
 import be.vubrooster.ejb.models.StudentGroup;
 import be.vubrooster.ejb.service.ServiceProvider;
+import be.vubrooster.utils.JSONUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,8 +33,8 @@ public class StudentGroupController {
     @RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
-    ResponseEntity<String> findAllStudentGroups(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent)
-    {
+    ResponseEntity<String> findAllStudentGroups(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
+                                                @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         StudentGroupServer studentGroupServer = ServiceProvider.getStudentGroupServer();
         List<StudentGroup> activityList = studentGroupServer.findStudentGroups(false);
         JsonArrayBuilder studentGroupArray = Json.createArrayBuilder();
@@ -41,16 +42,16 @@ public class StudentGroupController {
             studentGroupArray.add(a.toCompactJSON());
         }
         JsonObject jsonObject = Json.createObjectBuilder()
-                .add("studentgroups",studentGroupArray).build();
-        return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+                .add("studentgroups", studentGroupArray).build();
+        return new ResponseEntity<>(prettyPrint ? JSONUtils.prettyPrint(jsonObject) : jsonObject.toString(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
     ResponseEntity<String> findStudentGroupById(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
-                                            @PathVariable("id") String studentGroupId)
-    {
+                                                @PathVariable("id") String studentGroupId,
+                                                @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         try {
             StudentGroupServer studentGroupServer = ServiceProvider.getStudentGroupServer();
             StudentGroup studentGroup = studentGroupServer.findStudentGroupById(URLDecoder.decode(studentGroupId, "UTF-8"), false);
@@ -60,7 +61,7 @@ public class StudentGroupController {
                 JsonObject result = studentGroup.toCompactJSON().build();
                 return new ResponseEntity<>(result.toString(), HttpStatus.OK);
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
         }
     }

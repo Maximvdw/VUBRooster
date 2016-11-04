@@ -31,5 +31,9 @@
         <class>be.vubrooster.ejb.models.ClassRoom</class>
         <class>be.vubrooster.ejb.models.User</class>
         <class>be.vubrooster.ejb.models.GoogleCalendar</class>
+        <class>be.vubrooster.ejb.models.GroupGoogleCalendar</class>
+        <class>be.vubrooster.ejb.models.LocationGoogleCalendar</class>
+        <class>be.vubrooster.ejb.models.StaffGoogleCalendar</class>
+        <class>be.vubrooster.ejb.models.UserGoogleCalendar</class>
     </persistence-unit>
 </persistence>

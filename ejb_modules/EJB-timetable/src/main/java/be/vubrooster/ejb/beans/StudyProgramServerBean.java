@@ -1,6 +1,7 @@
 package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.StudyProgramServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.StudyProgram;
 import be.vubrooster.ejb.models.TimeTable;
@@ -55,7 +56,7 @@ public class StudyProgramServerBean implements StudyProgramServer {
     }
 
     @Override
-    public StudyProgram findStudyProgramById(int id, boolean useCache) {
+    public StudyProgram findStudyProgramById(String id, boolean useCache) {
         if (studyProgramList.isEmpty() || !useCache) {
             // Perform query
             Query query = getSession().getNamedQuery("findStudyProgramById");
@@ -64,7 +65,7 @@ public class StudyProgramServerBean implements StudyProgramServer {
         } else {
             // Use cache
             for (StudyProgram studyProgram : studyProgramList) {
-                if (studyProgram.getId() == id) {
+                if (studyProgram.getId().equalsIgnoreCase(id)) {
                     return studyProgram;
                 }
             }
@@ -97,6 +98,11 @@ public class StudyProgramServerBean implements StudyProgramServer {
 
     @Override
     public List<StudyProgram> saveStudyProgrammes(List<StudyProgram> studyPrograms) {
+        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            logger.warn("Sync timeout - cancelling sync");
+            return studyPrograms;
+        }
         List<StudyProgram> savedProgrammes = new ArrayList<>();
         long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (StudyProgram program : studyPrograms) {

@@ -2,6 +2,8 @@ package be.vubrooster.ejb.models;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Maxim Van de Wynckel
@@ -15,6 +17,9 @@ public abstract class BaseModel implements Serializable{
 
     @Column(name = "dateModified")
     private long dateModified;
+
+    @Transient
+    private Map<String,Object> extraData = new HashMap<>();
 
     public long getDateCreated() {
         return dateCreated;
@@ -49,4 +54,11 @@ public abstract class BaseModel implements Serializable{
 
     }
 
+    public Map<String, Object> getExtraData() {
+        return extraData;
+    }
+
+    public void setExtraData(Map<String, Object> extraData) {
+        this.extraData = extraData;
+    }
 }

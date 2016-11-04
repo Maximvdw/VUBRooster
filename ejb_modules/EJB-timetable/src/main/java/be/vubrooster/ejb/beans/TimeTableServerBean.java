@@ -1,8 +1,10 @@
 package be.vubrooster.ejb.beans;
 
+import be.vubrooster.ejb.DayMenuServer;
 import be.vubrooster.ejb.FacultyServer;
 import be.vubrooster.ejb.TimeTableServer;
 import be.vubrooster.ejb.enums.SyncState;
+import be.vubrooster.ejb.managers.ActivityManager;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.managers.EHBRooster;
 import be.vubrooster.ejb.managers.VUBRooster;
@@ -17,10 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.DependsOn;
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import javax.ejb.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
@@ -58,11 +57,11 @@ public class TimeTableServerBean implements TimeTableServer {
     @PostConstruct
     public void init() {
         logger.info("=====================================");
-        logger.info(" VUBRooster Converter v1.1");
+        logger.info(" VUBRooster Converter v1.5");
         logger.info(" (c) Maxim Van de Wynckel 2015-2016");
         logger.info("=====================================");
 
-        baseCore = new VUBRooster();
+        baseCore = new EHBRooster();
 
         // Load configuration
         be.vubrooster.ejb.ConfigurationServer configurationServer = ServiceProvider.getConfigurationServer();
@@ -70,11 +69,15 @@ public class TimeTableServerBean implements TimeTableServer {
         if (configurationServer.getBoolean("twitter.enabled")) {
             twitterServer.signIn(configurationServer.getString("twitter.consumerKey"), configurationServer.getString("twitter.consumerSecret"), configurationServer.getString("twitter.accessToken")
                     , configurationServer.getString("twitter.accessTokenSecret"));
+        }else{
+            logger.info("Twitter is disabled! Please enable it.");
+            return;
         }
 
         // Start watchdog
-        SchedulerManager.createTask(new SyncWatchdog(), 10, TimeUnit.SECONDS);
-        SchedulerManager.createTask(new RamWatchdog(), 10, TimeUnit.MINUTES);
+        logger.info("Starting watchdogs to monitor the synchronization ...");
+        SchedulerManager.createAsyncTask(new SyncWatchdog(), 10, TimeUnit.SECONDS);
+        SchedulerManager.createAsyncTask(new RamWatchdog(), 10, TimeUnit.MINUTES);
 
         logger.info("Loading latest sync info ...");
         if (getCurrentTimeTable() == null) {
@@ -91,15 +94,33 @@ public class TimeTableServerBean implements TimeTableServer {
         SchedulerManager.createTask(new Runnable() {
             @Override
             public void run() {
+                if (getCurrentTimeTable().getStartTimeStamp() != 0) {
+                    try {
+                        DayMenuServer dayMenuServer = ServiceProvider.getDayMenuServer();
+                        dayMenuServer.loadDayMenus();
+                        dayMenuServer.saveDayMenus();
+                    } catch (Exception ex) {
+                        logger.error("Unable to sync resto menus!");
+                    }
+                }
+            }
+        },4,TimeUnit.HOURS);
+
+        SchedulerManager.createTask(new Runnable() {
+            @Override
+            public void run() {
                 try {
                     sync();
                 } catch (OutOfMemoryError ex){
                     System.gc();
-                    ServiceProvider.getTwitterServer().postStatus("Sync crashed! Out of memory! " + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+                    ServiceProvider.getTwitterServer().sendDirectMessage(ServiceProvider.getConfigurationServer().getString("twitter.owner"),"Sync crashed! Out of memory!");
                     ex.printStackTrace();
+                    setSyncState(SyncState.WAITING);
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    ServiceProvider.getTwitterServer().postStatus("Sync crashed! Retrying next cycle ... " + " (CC @" + ServiceProvider.getConfigurationServer().getString("twitter.owner") + ")");
+                    System.gc();
+                    ServiceProvider.getTwitterServer().sendDirectMessage(ServiceProvider.getConfigurationServer().getString("twitter.owner"),"Sync crashed while " + getSyncState().name() + "! Retrying next cycle ...");
+                    setSyncState(SyncState.WAITING);
                 }
             }
         }, BaseCore.getInstance().getSyncInterval(), TimeUnit.MINUTES);
@@ -109,6 +130,8 @@ public class TimeTableServerBean implements TimeTableServer {
      * Perform a sync
      */
     public synchronized void sync() {
+        logger.info("Clearing temp cache files ...");
+        ActivityManager.clearTempFiles();
         logger.info("Performing garbage collect ...");
         System.gc(); // Garbage collect
 
@@ -119,18 +142,32 @@ public class TimeTableServerBean implements TimeTableServer {
 
         getBaseCore().sync();
 
-        // End the sync
-        long syncEndTime = System.currentTimeMillis();
-        Sync sync = new Sync(System.currentTimeMillis(), 0, 0, (syncEndTime - syncStartTime));
-        syncState = SyncState.SAVING;
-        logger.info("Synchronisation completed in " + sync.getDuration() + "ms!");
+        if (getSyncState() != SyncState.CRASHED) {
+            // End the sync
+            long syncEndTime = System.currentTimeMillis();
+            Sync sync = new Sync(System.currentTimeMillis(), 0, 0, (syncEndTime - syncStartTime));
+            syncState = SyncState.SAVING;
+            logger.info("Synchronisation completed in " + sync.getDuration() + "ms!");
 
-        logger.info("Saving activities to database ...");
-        ServiceProvider.getActivitiyServer().saveActivities(sync);
-        logger.info("Timetables saved to database! Waiting for next sync ...");
+            logger.info("Saving activities to database ...");
+            ServiceProvider.getActivitiyServer().saveActivities(sync);
+            ServiceProvider.getActivitiyServer().reloadCache();
+            logger.info("Timetables saved to database! Waiting for next sync ...");
+        }else{
+            ServiceProvider.getActivitiyServer().reloadCache();
+        }
 
         // Timeout for next sync
         syncState = SyncState.WAITING;
+
+        logger.info("Freeing up RAM by clearing temp cache ...");
+        BaseCore.getInstance().getStudentGroupManager().getStudentGroupList().clear();
+        BaseCore.getInstance().getActivityManager().getActivityList().clear();
+        BaseCore.getInstance().getStudyProgramManager().getStudyProgramList().clear();
+        BaseCore.getInstance().getClassRoomManager().getClassRoomList().clear();
+        BaseCore.getInstance().getCourseManager().getCourseList().clear();
+        BaseCore.getInstance().getFacultyManager().getFacultyList().clear();
+        BaseCore.getInstance().getStaffManager().getStaffList().clear();
 
         logger.info("Performing garbage collect ...");
         System.gc(); // Garbage collect

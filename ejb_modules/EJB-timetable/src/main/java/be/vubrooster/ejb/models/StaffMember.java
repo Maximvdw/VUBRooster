@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Entity
 @Cacheable()
 @Table(name = "staff", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
+        @Index(name = "i1_staff", columnList = "id", unique = true),
 })
 @NamedQueries({
         @NamedQuery(name = "findStaff",

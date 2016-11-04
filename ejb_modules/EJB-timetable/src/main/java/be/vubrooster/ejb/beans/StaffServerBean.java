@@ -1,6 +1,7 @@
 package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.StaffServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.StaffMember;
 import be.vubrooster.ejb.models.TimeTable;
@@ -82,6 +83,11 @@ public class StaffServerBean implements StaffServer{
 
     @Override
     public List<StaffMember> saveStaff(List<StaffMember> staffList) {
+        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            logger.warn("Sync timeout - cancelling sync");
+            return staffList;
+        }
         List<StaffMember> savedStaff = new ArrayList<>();
         long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (StaffMember staff : staffList){

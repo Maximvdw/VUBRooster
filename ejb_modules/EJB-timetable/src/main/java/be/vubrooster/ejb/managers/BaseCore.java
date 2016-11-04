@@ -14,7 +14,9 @@ public abstract class BaseCore {
     private ActivityManager activityManager = null;
     private StaffManager staffManager = null;
     private ClassRoomManager classRoomManager = null;
+    private DayMenuManager dayMenuManager = null;
     private static BaseCore instance = null;
+    private String directory = "";
 
     public BaseCore(){
         instance = this;
@@ -23,6 +25,8 @@ public abstract class BaseCore {
     public abstract void sync();
 
     public abstract void fastSync();
+
+    public abstract String getDirectory();
 
     public static BaseCore getInstance() {
         return instance;
@@ -99,4 +103,12 @@ public abstract class BaseCore {
      * @return sync interval in minutes
      */
     public abstract long getSyncInterval();
+
+    public DayMenuManager getDayMenuManager() {
+        return dayMenuManager;
+    }
+
+    public void setDayMenuManager(DayMenuManager dayMenuManager) {
+        this.dayMenuManager = dayMenuManager;
+    }
 }

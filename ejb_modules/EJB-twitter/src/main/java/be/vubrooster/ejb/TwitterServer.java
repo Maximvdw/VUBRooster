@@ -14,6 +14,13 @@ public interface TwitterServer {
     void postStatus(String status);
 
     /**
+     * Send a direct message
+     * @param to send it to
+     * @param message message to send
+     */
+    void sendDirectMessage(String to,String message);
+
+    /**
      * Sign in to twitter
      * @param consumerKey OAuth consumer key
      * @param consumerSecret OAuth consumer secret

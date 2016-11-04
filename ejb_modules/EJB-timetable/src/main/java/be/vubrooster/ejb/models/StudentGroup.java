@@ -8,14 +8,14 @@ import java.util.List;
 
 /**
  * StudentGroup
- * 
+ *
  * @author Maxim Van de Wynckel
  */
 @Entity
 @Table(name = "studentgroups", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "name", unique = true),
-        @Index(name = "i3", columnList = "active", unique = false),
+        @Index(name = "i1_studentgroups", columnList = "id", unique = true),
+        @Index(name = "i2_studentgroups", columnList = "name", unique = true),
+        @Index(name = "i3_studentgroups", columnList = "active", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findStudentGroups",
@@ -23,70 +23,73 @@ import java.util.List;
         @NamedQuery(name = "findStudentGroupById", query = "SELECT sg FROM StudentGroup sg WHERE sg.id = :id"),
         @NamedQuery(name = "findStudentGroupByName", query = "SELECT sg FROM StudentGroup sg WHERE sg.name = :name"),
 })
-public class StudentGroup extends BaseSyncModel implements Comparable<StudentGroup>{
-	@Id
+public class StudentGroup extends BaseSyncModel implements Comparable<StudentGroup> {
+    @Id
     @Column(name = "id")
     private String id = "";
     @Column(name = "name")
-	private String name = "";
+    private String name = "";
     @Column(name = "longName")
     private String longName = "";
     @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "studentgroup_studyprogrammes",
-            joinColumns=
-            @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
-            inverseJoinColumns=
-            @JoinColumn(name="studyprogram_id", referencedColumnName="id"),
-            uniqueConstraints = { @UniqueConstraint(columnNames = {
-                    "studentgroup_id", "studyprogram_id" })}
+            joinColumns =
+            @JoinColumn(name = "studentgroup_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "studyprogram_id", referencedColumnName = "id"),
+            uniqueConstraints = {@UniqueConstraint(columnNames = {
+                    "studentgroup_id", "studyprogram_id"})}
     )
-	private List<StudyProgram> studyProgrammes = new ArrayList<>();
+    private List<StudyProgram> studyProgrammes = new ArrayList<>();
     @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "studentgroup_courses",
-            joinColumns=
-            @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
-            inverseJoinColumns=
-            @JoinColumn(name="course_id", referencedColumnName="id"),
-            uniqueConstraints = { @UniqueConstraint(columnNames = {
-                    "studentgroup_id", "course_id" })}
+            joinColumns =
+            @JoinColumn(name = "studentgroup_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "course_id", referencedColumnName = "id"),
+            uniqueConstraints = {@UniqueConstraint(columnNames = {
+                    "studentgroup_id", "course_id"})}
     )
-	private List<Course> courses = new ArrayList<>();
+    private List<Course> courses = new ArrayList<>();
+    @ManyToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name = "faculty_id")
+    private Faculty faculty = null;
     @Column(name = "individual")
     private boolean individual = false;
     @Column(name = "listIdx")
     private int listIdx = 0;
 
-    public StudentGroup(){
+    public StudentGroup() {
 
     }
 
-    public StudentGroup(String name, String splusId){
+    public StudentGroup(String name, String splusId) {
         setName(name);
         setId(splusId);
     }
 
-	public StudentGroup(String name){
-		setName(name);
+    public StudentGroup(String name) {
+        setName(name);
         setId(name);
-	}
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public List<Course> getCourses() {
-		return courses;
-	}
+    public List<Course> getCourses() {
+        return courses;
+    }
 
-	public void setCourses(List<Course> courses) {
-		this.courses = courses;
-	}
+    public void setCourses(List<Course> courses) {
+        this.courses = courses;
+    }
 
-    public boolean addCourse(Course course){
+    public boolean addCourse(Course course) {
         if (!courses.contains(course)) {
             courses.add(course);
             return true;
@@ -94,9 +97,9 @@ public class StudentGroup extends BaseSyncModel implements Comparable<StudentGro
         return false;
     }
 
-	public boolean addStudyProgram(StudyProgram studyProgram){
-	    if (!studyProgrammes.contains(studyProgram)) {
-	        studyProgrammes.add(studyProgram);
+    public boolean addStudyProgram(StudyProgram studyProgram) {
+        if (!studyProgrammes.contains(studyProgram)) {
+            studyProgrammes.add(studyProgram);
             return true;
         }
         return false;
@@ -171,10 +174,19 @@ public class StudentGroup extends BaseSyncModel implements Comparable<StudentGro
         this.listIdx = listIdx;
     }
 
-    public JsonObjectBuilder toCompactJSON(){
+    public JsonObjectBuilder toCompactJSON() {
         return Json.createObjectBuilder()
-                .add("studentgroup_id",getId())
-                .add("name",getName())
-                .add("long_name",getLongName());
+                .add("studentgroup_id", getId())
+                .add("name", getName())
+                .add("long_name", getLongName())
+                .add("faculty", faculty.toJSON());
+    }
+
+    public Faculty getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
     }
 }

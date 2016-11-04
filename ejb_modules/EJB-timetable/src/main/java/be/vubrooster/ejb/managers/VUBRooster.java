@@ -26,6 +26,7 @@ public class VUBRooster extends BaseCore{
         setStudyProgramManager(new VUBStudyProgramManager(ServiceProvider.getStudyProgramServer()));
         setStaffManager(new VUBStaffManager(ServiceProvider.getStaffServer()));
         setClassRoomManager(new VUBClassRoomManager(ServiceProvider.getClassRoomServer()));
+        setDayMenuManager(new VUBDayMenuManager(ServiceProvider.getDayMenuServer()));
     }
 
     @Override
@@ -56,16 +57,18 @@ public class VUBRooster extends BaseCore{
                 e.printStackTrace();
             }
         }
+        logger.info("Performing garbage collect ...");
+        System.gc(); // Garbage collect
         logger.info("Assigning courses to groups ...");
         studentGroupServer.assignCoursesToGroups();
         logger.info("Extracting staff members from activities ...");
         StaffServer staffServer = ServiceProvider.getStaffServer();
-        staffServer.loadStaff();;
+        staffServer.loadStaff();
         logger.info("Saving staff to database ...");
         staffServer.saveStaff();
         logger.info("Extracting classrooms from activities ...");
         ClassRoomServer classRoomServer = ServiceProvider.getClassRoomServer();
-        classRoomServer.loadClassRooms();;
+        classRoomServer.loadClassRooms();
         logger.info("Saving classrooms to database ...");
         classRoomServer.saveClassRooms();
         logger.info("Loading timetables for all extracted teachers ...");
@@ -85,12 +88,17 @@ public class VUBRooster extends BaseCore{
     }
 
     @Override
+    public String getDirectory() {
+        return "VUBRooster";
+    }
+
+    @Override
     public long getSyncTimeout() {
-        return 40;
+        return 70;
     }
 
     @Override
     public long getSyncInterval() {
-        return 30;
+        return 60;
     }
 }

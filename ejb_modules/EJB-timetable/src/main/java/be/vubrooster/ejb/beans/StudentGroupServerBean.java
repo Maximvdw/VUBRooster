@@ -2,6 +2,7 @@ package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.StudentGroupServer;
 import be.vubrooster.ejb.StudyProgramServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.StudentGroup;
 import be.vubrooster.ejb.models.StudyProgram;
@@ -116,6 +117,11 @@ public class StudentGroupServerBean implements StudentGroupServer {
 
     @Override
     public List<StudentGroup> saveStudentGroups(List<StudentGroup> studentGroups) {
+        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            logger.warn("Sync timeout - cancelling sync");
+            return studentGroups;
+        }
         List<StudentGroup> savedStudentGroups = new ArrayList<>();
         StudyProgramServer studyProgramServer = ServiceProvider.getStudyProgramServer();
         long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
@@ -139,7 +145,11 @@ public class StudentGroupServerBean implements StudentGroupServer {
 
     @Override
     public void updateStudentGroup(StudentGroup group) {
-        getSession().merge(group);
+        StudentGroup savedGroup = (StudentGroup) getSession().merge(group);
+        if (studentGroupList.contains(savedGroup)){
+            studentGroupList.remove(savedGroup);
+        }
+        studentGroupList.add(savedGroup);
     }
 
     @Override

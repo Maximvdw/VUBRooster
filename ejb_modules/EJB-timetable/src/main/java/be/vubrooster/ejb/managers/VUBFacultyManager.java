@@ -106,9 +106,10 @@ public class VUBFacultyManager extends FacultyManager {
                 if (tempFaculty == null) {
                     tempFaculty = new Faculty();
                     tempFaculty.setCode(facultyShortName);
+                    tempFaculty.setId(facultyShortName);
                 } else {
                     // Already exists (other dutch/english)
-                    if (tempFaculty.getId() != 0) {
+                    if (tempFaculty.getId().equalsIgnoreCase("")) {
                         continue;
                     }
                 }
@@ -125,8 +126,7 @@ public class VUBFacultyManager extends FacultyManager {
             }
             return true;
         } catch (Exception ex) {
-            logger.info("Unable to load faculties. Retrying ...");
-            ex.printStackTrace();
+            logger.error("Unable to load faculties. Retrying ...",ex);
             return false;
         }
     }

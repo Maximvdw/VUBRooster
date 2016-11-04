@@ -15,25 +15,25 @@ import java.util.List;
 @Entity
 @Cacheable(true)
 @Table(name = "activities", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "name", unique = false),
-        @Index(name = "i3", columnList = "staff", unique = false),
-        @Index(name = "i4", columnList = "week", unique = false),
-        @Index(name = "i5", columnList = "day", unique = false),
-        @Index(name = "i6", columnList = "beginTimeUnix", unique = false),
-        @Index(name = "i7", columnList = "endTimeUnix", unique = false),
-        @Index(name = "i8", columnList = "active", unique = false),
+        @Index(name = "i1_activities", columnList = "id", unique = true),
+        @Index(name = "i2_activities", columnList = "name", unique = false),
+        @Index(name = "i3_activities", columnList = "staff", unique = false),
+        @Index(name = "i4_activities", columnList = "week", unique = false),
+        @Index(name = "i5_activities", columnList = "day", unique = false),
+        @Index(name = "i6_activities", columnList = "beginTimeUnix", unique = false),
+        @Index(name = "i7_activities", columnList = "endTimeUnix", unique = false),
+        @Index(name = "i8_activities", columnList = "active", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findActivities",
                 query = "SELECT a FROM Activity a WHERE a.active = true"),
         @NamedQuery(name = "findActivityById", query = "SELECT a FROM Activity a WHERE a.id = :id AND a.active = true"),
-        @NamedQuery(name = "findAllActivitiesForStaffMember",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.staff LIKE :staff) AND a.active = true GROUP BY a.staff,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findAllActivitiesForClassRoom",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findAllActivitiesForStudentGroup",query = "SELECT a,group_concat(a.staff) FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findWeekActivitiesForStaffMember",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.staff LIKE :staff) AND a.week = :week AND a.active = true GROUP BY a.staff,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findWeekActivitiesForClassRoom",query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.week = :week AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
-        @NamedQuery(name = "findWeekActivitiesForStudentGroup",query = "SELECT a,group_concat(a.staff) FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.week = :week AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForStaffMember", query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.staff LIKE :staff) AND a.active = true GROUP BY a.staff,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForClassRoom", query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findAllActivitiesForStudentGroup", query = "SELECT a,group_concat(a.staff) FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findWeekActivitiesForStaffMember", query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.staff LIKE :staff) AND a.week = :week AND a.active = true GROUP BY a.staff,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findWeekActivitiesForClassRoom", query = "SELECT a,group_concat(a.staff) FROM Activity a WHERE (a.classRoom LIKE :classRoom) AND a.week = :week AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
+        @NamedQuery(name = "findWeekActivitiesForStudentGroup", query = "SELECT a,group_concat(a.staff) FROM Activity a JOIN a.groups b WHERE b.id = :studentGroup AND a.week = :week AND a.active = true GROUP BY a.name,a.beginTimeUnix ORDER BY a.beginTimeUnix ASC"),
 })
 public class Activity extends BaseSyncModel {
     @Id
@@ -44,20 +44,39 @@ public class Activity extends BaseSyncModel {
     private String name = "";
     @Column(name = "classRoom")
     private String classRoom = "";
-    @Column(name = "staff",length = 750)
+    @Column(name = "staff", length = 750)
     private String staff = "";
-    @Column(name = "groupsString",length = 750)
+    @Column(name = "groupsString", length = 750)
     private String groupsString = "";
-    @ManyToMany(cascade = CascadeType.DETACH,fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "activity_courses",
-            joinColumns=
-            @JoinColumn(name="activity_id", referencedColumnName="id"),
-            inverseJoinColumns=
-            @JoinColumn(name="course_id", referencedColumnName="id"),
-            uniqueConstraints = { @UniqueConstraint(columnNames = {
-                    "activity_id", "course_id" })}
+            joinColumns =
+            @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "course_id", referencedColumnName = "id"),
+            uniqueConstraints = {@UniqueConstraint(name = "uc_activity_course",columnNames = {
+                    "activity_id", "course_id"})}
     )
     private List<Course> courses = Collections.synchronizedList(new ArrayList<>());
+    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
+    @JoinTable(name = "activity_staff",
+            joinColumns =
+            @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "staff_id", referencedColumnName = "id"),
+            uniqueConstraints = {@UniqueConstraint(name = "uc_activity_staff", columnNames = {
+                    "activity_id", "staff_id"})})
+    private List<StaffMember> staffMembers = new ArrayList<>();
+    @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
+    @JoinTable(name = "activity_studyprogrammes",
+            joinColumns =
+            @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "studyprogram_id", referencedColumnName = "id"),
+            uniqueConstraints = {@UniqueConstraint(name = "uc_activity_studyprogrammes",columnNames = {
+                    "activity_id", "studyprogram_id"})}
+    )
+    private List<StudyProgram> studyProgrammes = Collections.synchronizedList(new ArrayList<>());
     @Column(name = "week")
     private int week = 0;
     @Column(name = "weeksLabel")
@@ -76,29 +95,28 @@ public class Activity extends BaseSyncModel {
     private int day = 0;
     @ManyToMany(cascade = CascadeType.DETACH, fetch = FetchType.EAGER)
     @JoinTable(name = "activity_studentgroups",
-            joinColumns=
-            @JoinColumn(name="activity_id", referencedColumnName="id"),
-            inverseJoinColumns=
-            @JoinColumn(name="studentgroup_id", referencedColumnName="id"),
-            uniqueConstraints = { @UniqueConstraint(columnNames = {
-                    "activity_id", "studentgroup_id" })}
+            joinColumns =
+            @JoinColumn(name = "activity_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "studentgroup_id", referencedColumnName = "id"),
+            uniqueConstraints = {@UniqueConstraint(name = "uc_activity_studentgroup", columnNames = {
+                    "activity_id", "studentgroup_id"})}
     )
     private List<StudentGroup> groups = Collections.synchronizedList(new ArrayList<>());
 
-    public Activity(){
+    public Activity() {
 
     }
 
-    public Activity(String name, String classRoom){
+    public Activity(String name, String classRoom) {
         setName(name);
         setClassRoom(classRoom);
     }
 
     @PreUpdate
     @PrePersist
-    @PreRemove
     protected void prePersist() {
-        if (groupsString.equals("")){
+        if (groupsString.equals("")) {
             if (groups.size() > 0) {
                 groupsString = groups.get(0).getName();
                 for (int i = 1; i < groups.size(); i++) {
@@ -106,8 +124,8 @@ public class Activity extends BaseSyncModel {
                 }
             }
         }
-        if (groupsString.length() >= 750){
-            groupsString = groupsString.substring(0,740) + " ...";
+        if (groupsString.length() >= 750) {
+            groupsString = groupsString.substring(0, 740) + " ...";
         }
     }
 
@@ -223,22 +241,44 @@ public class Activity extends BaseSyncModel {
         this.endTime = endTime;
     }
 
-    public boolean addGroup(StudentGroup group){
-        if (group == null){
+    public boolean addGroup(StudentGroup group) {
+        if (group == null) {
             return false;
         }
-        if (!groups.contains(group)){
+        if (!groups.contains(group)) {
             groups.add(group);
             return true;
         }
         return false;
     }
 
-    public boolean addCourse(Course course){
-        if (course == null){
+    public boolean addStudyProgram(StudyProgram program) {
+        if (program == null) {
             return false;
         }
-        if (!courses.contains(course)){
+        if (!studyProgrammes.contains(program)) {
+            studyProgrammes.add(program);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addStaffMember(StaffMember staffMember) {
+        if (staffMember == null) {
+            return false;
+        }
+        if (!staffMembers.contains(staffMember)) {
+            staffMembers.add(staffMember);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addCourse(Course course) {
+        if (course == null) {
+            return false;
+        }
+        if (!courses.contains(course)) {
             courses.add(course);
             return true;
         }
@@ -252,15 +292,15 @@ public class Activity extends BaseSyncModel {
 
         Activity activity = (Activity) o;
 
+        if (id != 0 && id == activity.getId()) return true;
         if (week != activity.week) return false;
         if (beginTimeUnix != activity.beginTimeUnix) return false;
         if (endTimeUnix != activity.endTimeUnix) return false;
         if (day != activity.day) return false;
-        if (name != null ? !name.equals(activity.name) : activity.name != null) return false;
-        if (classRoom != null ? !classRoom.equals(activity.classRoom) : activity.classRoom != null) return false;
-        if (staff != null ? !staff.equals(activity.staff) : activity.staff != null) return false;
-        return groupsString != null ? groupsString.equals(activity.groupsString) : activity.groupsString == null;
-
+        if (name != null ? !name.equalsIgnoreCase(activity.name) : activity.name != null) return false;
+        if (classRoom != null ? !classRoom.equalsIgnoreCase(activity.classRoom) : activity.classRoom != null) return false;
+        if (staff != null ? !staff.equalsIgnoreCase(activity.staff) : activity.staff != null) return false;
+        return groupsString != null ? groupsString.equalsIgnoreCase(activity.groupsString) : activity.groupsString == null;
     }
 
     @Override
@@ -276,53 +316,53 @@ public class Activity extends BaseSyncModel {
         return result;
     }
 
-    public JsonObjectBuilder toCompactJSON(){
+    public JsonObjectBuilder toCompactJSON() {
         return Json.createObjectBuilder()
-                .add("activity_id",id)
-                .add("summary",getName())
-                .add("location",getClassRoom())
-                .add("start_unix",getBeginTimeUnix())
-                .add("end_unix",getEndTimeUnix())
-                .add("start_time",getBeginTime())
-                .add("end_time",getEndTime())
-                .add("weeks_label",weeksLabel)
-                .add("groups_label",groupsString)
-                .add("lesson_type",getLessonForm())
-                .add("week",getWeek())
-                .add("day",getDay())
-                .add("staff",getStaff())
-                .add("last_sync",getLastSync())
-                .add("last_update",getLastUpdate())
-                .add("active",isActive());
+                .add("activity_id", id)
+                .add("summary", getName())
+                .add("location", getClassRoom())
+                .add("start_unix", getBeginTimeUnix())
+                .add("end_unix", getEndTimeUnix())
+                .add("start_time", getBeginTime())
+                .add("end_time", getEndTime())
+                .add("weeks_label", weeksLabel)
+                .add("groups_label", groupsString)
+                .add("lesson_type", getLessonForm())
+                .add("week", getWeek())
+                .add("day", getDay())
+                .add("staff", getStaff())
+                .add("last_sync", getLastSync())
+                .add("last_update", getLastUpdate())
+                .add("active", isActive());
     }
 
-    public JsonObjectBuilder toFullJSON(){
+    public JsonObjectBuilder toFullJSON() {
         JsonArrayBuilder coursesArray = Json.createArrayBuilder();
-        for (Course c : getCourses()){
+        for (Course c : getCourses()) {
             coursesArray.add(c.toJSON());
         }
         JsonArrayBuilder groupsArray = Json.createArrayBuilder();
-        for (StudentGroup g : getGroups()){
+        for (StudentGroup g : getGroups()) {
             groupsArray.add(g.toCompactJSON());
         }
         return Json.createObjectBuilder()
-                .add("activity_id",id)
-                .add("summary",getName())
-                .add("location",getClassRoom())
-                .add("start_unix",getBeginTimeUnix())
-                .add("end_unix",getEndTimeUnix())
-                .add("start_time",getBeginTime())
-                .add("end_time",getEndTime())
-                .add("weeks_label",weeksLabel)
-                .add("groups_label",groupsString)
-                .add("lesson_type",getLessonForm())
-                .add("week",getWeek())
-                .add("day",getDay())
-                .add("staff",getStaff())
-                .add("last_sync",getLastSync())
-                .add("last_update",getLastUpdate())
-                .add("courses",coursesArray)
-                .add("studentgroups",groupsArray);
+                .add("activity_id", id)
+                .add("summary", getName())
+                .add("location", getClassRoom())
+                .add("start_unix", getBeginTimeUnix())
+                .add("end_unix", getEndTimeUnix())
+                .add("start_time", getBeginTime())
+                .add("end_time", getEndTime())
+                .add("weeks_label", weeksLabel)
+                .add("groups_label", groupsString)
+                .add("lesson_type", getLessonForm())
+                .add("week", getWeek())
+                .add("day", getDay())
+                .add("staff", getStaff())
+                .add("last_sync", getLastSync())
+                .add("last_update", getLastUpdate())
+                .add("courses", coursesArray)
+                .add("studentgroups", groupsArray);
     }
 
     public String getLessonForm() {
@@ -331,5 +371,21 @@ public class Activity extends BaseSyncModel {
 
     public void setLessonForm(String lessonForm) {
         this.lessonForm = lessonForm;
+    }
+
+    public List<StaffMember> getStaffMembers() {
+        return staffMembers;
+    }
+
+    public void setStaffMembers(List<StaffMember> staffMembers) {
+        this.staffMembers = staffMembers;
+    }
+
+    public List<StudyProgram> getStudyProgrammes() {
+        return studyProgrammes;
+    }
+
+    public void setStudyProgrammes(List<StudyProgram> studyProgrammes) {
+        this.studyProgrammes = studyProgrammes;
     }
 }

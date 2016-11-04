@@ -12,10 +12,10 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "faculties", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "nameDutch", unique = false),
-        @Index(name = "i3", columnList = "nameEnglish", unique = false),
-        @Index(name = "i4", columnList = "code", unique = true),
+        @Index(name = "i1_faculties", columnList = "id", unique = true),
+        @Index(name = "i2_faculties", columnList = "nameDutch", unique = false),
+        @Index(name = "i3_faculties", columnList = "nameEnglish", unique = false),
+        @Index(name = "i4_faculties", columnList = "code", unique = true),
 })
 @NamedQueries({
         @NamedQuery(name = "findFaculties",
@@ -27,9 +27,8 @@ import javax.persistence.*;
 })
 public class Faculty extends BaseSyncModel implements Comparable<Faculty> {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private String id = "";
     @Column(name = "nameDutch")
     private String nameDutch = "";
     @Column(name = "nameEnglish")
@@ -45,23 +44,31 @@ public class Faculty extends BaseSyncModel implements Comparable<Faculty> {
 
     }
 
+    public Faculty(String id, String code, String nameDutch, String nameEnglish) {
+        setId(id);
+        setCode(code);
+        setNameDutch(nameDutch);
+        setNameEnglish(nameEnglish);
+    }
+
     public Faculty(String code, String nameDutch, String nameEnglish) {
         setCode(code);
+        setId(code);
         setNameEnglish(nameEnglish);
         setNameDutch(nameDutch);
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
     @Override
     public int compareTo(Faculty otherFaculty) {
-        if (id == otherFaculty.id) {
+        if (id.equalsIgnoreCase(otherFaculty.id)) {
             return 0;
         }
         return code.compareTo(otherFaculty.getCode());

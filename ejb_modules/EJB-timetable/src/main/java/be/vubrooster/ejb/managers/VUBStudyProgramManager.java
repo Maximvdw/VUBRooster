@@ -2,6 +2,7 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.StudyProgramServer;
 import be.vubrooster.ejb.enums.Language;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.models.Faculty;
 import be.vubrooster.ejb.models.StudyProgram;
 import be.vubrooster.ejb.service.ServiceProvider;
@@ -102,6 +103,11 @@ public class VUBStudyProgramManager extends StudyProgramManager{
             }
             logger.error(
                     "Unable to get faculty page '" + language.name() + "' for faculty: " + faculty.getCode());
+            if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                // Crashed - Do not retry
+                logger.warn("Sync timeout - cancelling sync");
+                return;
+            }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e1) {

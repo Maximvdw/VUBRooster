@@ -22,6 +22,7 @@ public class ServiceProvider {
     private static be.vubrooster.ejb.TwitterServer twitterServer;
     private static StaffServer staffServer;
     private static ClassRoomServer classRoomServer;
+    private static DayMenuServer dayMenuServer;
 
     /**
      * Get the commons server
@@ -46,6 +47,19 @@ public class ServiceProvider {
         }
         return activitiyServer;
     }
+
+    /**
+     * Get the faculty server
+     *
+     * @return Activity server
+     */
+    public static DayMenuServer getDayMenuServer() {
+        if (dayMenuServer == null) {
+            dayMenuServer = (DayMenuServer) ServiceLocator.doLookup(ServiceLocator.DAYMENU_SERVER);
+        }
+        return dayMenuServer;
+    }
+
 
     /**
      * Get the student group server

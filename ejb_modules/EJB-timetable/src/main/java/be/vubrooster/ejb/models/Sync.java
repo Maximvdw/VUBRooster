@@ -7,8 +7,8 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "sync", indexes = {
-		@Index(name = "i1", columnList = "id", unique = true),
-		@Index(name = "i2", columnList = "timeStamp", unique = true),
+		@Index(name = "i1_sync", columnList = "id", unique = true),
+		@Index(name = "i2_sync", columnList = "timeStamp", unique = true),
 })
 @NamedQueries({
 		@NamedQuery(name = "findSyncs",

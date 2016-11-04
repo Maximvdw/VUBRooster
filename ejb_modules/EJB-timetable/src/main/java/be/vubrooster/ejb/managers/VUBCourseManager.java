@@ -43,6 +43,7 @@ public class VUBCourseManager extends CourseManager{
                 if (!course.addVariant(courseVariant)) {
                     // Delete it would be a great option... but yeah
                     // its more work for you Maxim... your decision
+                    logger.warn("Duplicate course variant for course: " + course.getName() + " Variant=" + courseVariant.getId());
                 }
             }
         }

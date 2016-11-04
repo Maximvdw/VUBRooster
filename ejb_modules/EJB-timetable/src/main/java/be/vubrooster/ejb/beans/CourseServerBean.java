@@ -1,6 +1,7 @@
 package be.vubrooster.ejb.beans;
 
 import be.vubrooster.ejb.CourseServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.managers.BaseCore;
 import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.models.CourseVariant;
@@ -84,6 +85,28 @@ public class CourseServerBean implements CourseServer {
     }
 
     @Override
+    public void cleanCourses() {
+        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            return;
+        }
+        TimeTable currentTimeTable = ServiceProvider.getTimeTableServer().getCurrentTimeTable();
+
+        List<Course> cachedCourseList = new ArrayList<>(courseList);
+        for (Course course : cachedCourseList){
+            if (course != null){
+                if (!course.isDirty()){
+                    if (course.getLastSync() < currentTimeTable.getLastSync()){
+                        logger.info("Removing course: " + course.getName());
+                        getSession().delete(entityManager.merge(course));
+                        courseList.remove(course);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public Course findCourseById(String id, boolean useCache) {
         if (courseList.isEmpty() || !useCache) {
             // Perform query
@@ -112,8 +135,11 @@ public class CourseServerBean implements CourseServer {
 
     @Override
     public List<Course> saveCourses(List<Course> courses) {
+        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+            // Crashed - Do not retry
+            return courses;
+        }
         List<Course> savedCourses = new ArrayList<>();
-        long startTime = ServiceProvider.getTimeTableServer().getSyncStartTime() / 1000;
         for (Course course : courses) {
             if (course.isDirty()) {
                 Course savedCourse = (Course) getSession().merge(course);

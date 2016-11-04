@@ -66,8 +66,7 @@ public class EHBStaffManager extends StaffManager {
                 idx++;
             }
         } catch (Exception ex) {
-            logger.warn("Unable to get lectors from site [#3]!");
-            ex.printStackTrace();
+            logger.error("Unable to get lectors from site [#3]!",ex);
         }
         return getStaffList();
     }

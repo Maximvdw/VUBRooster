@@ -32,7 +32,7 @@ public interface FacultyServer {
      * @param useCache use cache
      * @return faculty if found
      */
-    Faculty findFacultyById(int id, boolean useCache);
+    Faculty findFacultyById(String id, boolean useCache);
 
     /**
      * Find faculty by code

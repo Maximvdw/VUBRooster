@@ -26,21 +26,65 @@ public interface ActivitiyServer {
      * @param member member to get activities for
      * @return list of activities
      */
-    List<Activity> findAllActivitiesForStaffMember(StaffMember member);
+    List<Activity> findAllActivitiesForStaffMember(StaffMember member, boolean useCache);
+
+    /**
+     * Find all activities for user
+     * @param selectedGroups selected groups
+     * @param hiddenCourses hidden courses
+     * @param useCache use cache
+     * @return list of activities
+     */
+    List<Activity> findAllActivitiesForUser(List<StudentGroup> selectedGroups, List<Course> hiddenCourses, boolean useCache);
 
     /**
      * Find all activities for class room
      * @param classRoom class rom to get activities for
      * @return list of activities
      */
-    List<Activity> findAllActivitiesForClassRoom(ClassRoom classRoom);
+    List<Activity> findAllActivitiesForClassRoom(ClassRoom classRoom, boolean useCache);
 
     /**
      * Find all activities for student group
      * @param group student group to get activities for
      * @return list of activities
      */
-    List<Activity> findAllActivitiesForStudentGroup(StudentGroup group);
+    List<Activity> findAllActivitiesForStudentGroup(StudentGroup group, boolean useCache);
+
+
+    /**
+     * Find week activities for staff member
+     *
+     * @param member member to get activities for
+     * @param week week to get
+     * @return list of activities
+     */
+    List<Activity> findWeekActivitiesForStaffMember(StaffMember member,int week, boolean useCache);
+
+    /**
+     * Find week activities for user
+     * @param selectedGroups selected groups
+     * @param hiddenCourses hidden courses
+     * @param useCache use cache
+     * @return list of activities
+     */
+    List<Activity> findWeekActivitiesForUser(List<StudentGroup> selectedGroups, List<Course> hiddenCourses, int week, boolean useCache);
+
+    /**
+     * Find week activities for class room
+     * @param classRoom class rom to get activities for
+     * @param week week to get
+     * @return list of activities
+     */
+    List<Activity> findWeekActivitiesForClassRoom(ClassRoom classRoom,int week, boolean useCache);
+
+    /**
+     * Find week activities for student group
+     * @param group student group to get activities for
+     * @param week week to get
+     * @return list of activities
+     */
+    List<Activity> findWeekActivitiesForStudentGroup(StudentGroup group,int week, boolean useCache);
 
     /**
      * Get activities count
@@ -119,4 +163,28 @@ public interface ActivitiyServer {
      * @return future
      */
     Future loadActivitiesForCourses(boolean reloadData);
+
+    /**
+     * Load activities for study programmes
+     * @return future
+     */
+    Future loadActivitiesForStudyProgrammes(boolean reloadData);
+
+    void reloadCache();
+
+    /**
+     * Find activitiy changes for group
+     * @param group group to get changes for
+     * @param useCache use cache
+     * @return list of activity changes
+     */
+    List<ActivityChange> findActivityChangesForGroup(StudentGroup group, boolean useCache);
+
+    /**
+     * Find activity history
+     * @param activity activity to get history for
+     * @param useCache use cache
+     * @return list of activity changes
+     */
+    ActivityChange findActivityChangeByActivity(Activity activity,boolean useCache);
 }

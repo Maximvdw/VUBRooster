@@ -3,6 +3,7 @@ package be.vubrooster.api.course.controllers;
 import be.vubrooster.ejb.CourseServer;
 import be.vubrooster.ejb.models.Course;
 import be.vubrooster.ejb.service.ServiceProvider;
+import be.vubrooster.utils.JSONUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,8 +32,8 @@ public class CourseManager {
     @RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
-    ResponseEntity<String> findAllCourses(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent)
-    {
+    ResponseEntity<String> findAllCourses(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
+                                          @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         CourseServer courseServer = ServiceProvider.getCourseServer();
         List<Course> courseList = courseServer.findCourses(false);
         JsonArrayBuilder courseArray = Json.createArrayBuilder();
@@ -40,21 +41,21 @@ public class CourseManager {
             courseArray.add(a.toJSON());
         }
         JsonObject jsonObject = Json.createObjectBuilder()
-                .add("courses",courseArray).build();
-        return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+                .add("courses", courseArray).build();
+        return new ResponseEntity<>(prettyPrint ? JSONUtils.prettyPrint(jsonObject) : jsonObject.toString(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
     ResponseEntity<String> findCourseById(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
-                                            @PathVariable("id") String courseId)
-    {
+                                          @PathVariable("id") String courseId,
+                                          @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         CourseServer courseServer = ServiceProvider.getCourseServer();
-        Course course = courseServer.findCourseById(courseId,false);
-        if (course == null){
+        Course course = courseServer.findCourseById(courseId, false);
+        if (course == null) {
             return new ResponseEntity<>("{'error':'No such course found!'}", HttpStatus.NOT_FOUND);
-        }else{
+        } else {
             JsonObject result = course.toJSON().build();
             return new ResponseEntity<>(result.toString(), HttpStatus.OK);
         }

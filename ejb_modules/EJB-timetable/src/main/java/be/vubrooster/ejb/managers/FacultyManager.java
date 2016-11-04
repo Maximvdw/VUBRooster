@@ -49,6 +49,31 @@ public class FacultyManager {
             return faculty;
         }else {
             Faculty existingFaculty = facultyList.get(facultyList.indexOf(faculty));
+            if (!existingFaculty.getNameDutch().equalsIgnoreCase(faculty.getNameDutch())){
+                existingFaculty.setDirty(true);
+                existingFaculty.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingFaculty.setNameDutch(faculty.getNameDutch());
+            }
+            if (!existingFaculty.getNameEnglish().equalsIgnoreCase(faculty.getNameEnglish())){
+                existingFaculty.setDirty(true);
+                existingFaculty.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingFaculty.setNameEnglish(faculty.getNameEnglish());
+            }
+            if (!existingFaculty.getUrlDutch().equalsIgnoreCase(faculty.getUrlDutch())){
+                existingFaculty.setDirty(true);
+                existingFaculty.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingFaculty.setUrlDutch(faculty.getUrlDutch());
+            }
+            if (!existingFaculty.getUrlEnglish().equalsIgnoreCase(faculty.getUrlEnglish())){
+                existingFaculty.setDirty(true);
+                existingFaculty.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingFaculty.setUrlEnglish(faculty.getUrlEnglish());
+            }
+            if (!existingFaculty.getId().equalsIgnoreCase(faculty.getId())){
+                existingFaculty.setDirty(true);
+                existingFaculty.setLastUpdate(System.currentTimeMillis() / 1000);
+                existingFaculty.setId(faculty.getId());
+            }
             existingFaculty.setLastSync(System.currentTimeMillis() / 1000);
             return existingFaculty;
         }

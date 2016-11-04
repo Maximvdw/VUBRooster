@@ -31,8 +31,7 @@ public class FacultyController {
     public
     @ResponseBody
     ResponseEntity<String> findAllFaculties(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
-                                            @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint)
-    {
+                                            @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
         List<Faculty> facultyList = facultyServer.findFaculties(false);
         JsonArrayBuilder facultyArray = Json.createArrayBuilder();
@@ -40,7 +39,7 @@ public class FacultyController {
             facultyArray.add(a.toJSON());
         }
         JsonObject jsonObject = Json.createObjectBuilder()
-                .add("faculties",facultyArray).build();
+                .add("faculties", facultyArray).build();
         return new ResponseEntity<>(prettyPrint ? JSONUtils.prettyPrint(jsonObject) : jsonObject.toString(), HttpStatus.OK);
     }
 
@@ -48,13 +47,13 @@ public class FacultyController {
     public
     @ResponseBody
     ResponseEntity<String> findFacultyById(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
-                                            @PathVariable("id") long facultyId)
-    {
+                                           @PathVariable("id") String facultyId,
+                                           @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
-        Faculty faculty = facultyServer.findFacultyById((int) facultyId,false);
-        if (faculty == null){
+        Faculty faculty = facultyServer.findFacultyById(facultyId, false);
+        if (faculty == null) {
             return new ResponseEntity<>("{'error':'No such faculty found!'}", HttpStatus.NOT_FOUND);
-        }else{
+        } else {
             JsonObject result = faculty.toJSON().build();
             return new ResponseEntity<>(result.toString(), HttpStatus.OK);
         }
@@ -64,13 +63,13 @@ public class FacultyController {
     public
     @ResponseBody
     ResponseEntity<String> findFacultyByCode(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
-                                           @PathVariable("code") String facultyCode)
-    {
+                                             @PathVariable("code") String facultyCode,
+                                             @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint) {
         FacultyServer facultyServer = ServiceProvider.getFacultyServer();
-        Faculty faculty = facultyServer.findFacultyByCode(facultyCode,false);
-        if (faculty == null){
+        Faculty faculty = facultyServer.findFacultyByCode(facultyCode, false);
+        if (faculty == null) {
             return new ResponseEntity<>("{'error':'No such faculty found!'}", HttpStatus.NOT_FOUND);
-        }else{
+        } else {
             JsonObject result = faculty.toJSON().build();
             return new ResponseEntity<>(result.toString(), HttpStatus.OK);
         }

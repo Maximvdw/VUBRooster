@@ -9,9 +9,9 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "coursevariants", indexes = {
-        @Index(name = "i1", columnList = "id", unique = true),
-        @Index(name = "i2", columnList = "name", unique = false),
-        @Index(name = "i3", columnList = "course_id", unique = false),
+        @Index(name = "i1_coursevariants", columnList = "id", unique = true),
+        @Index(name = "i2_coursevariants", columnList = "name", unique = false),
+        @Index(name = "i3_coursevariants", columnList = "course_id", unique = false),
 })
 @NamedQueries({
         @NamedQuery(name = "findCourseVariants",

@@ -7,4 +7,5 @@ package be.vubrooster.api.user.models;
 public class AuthenticationRequest {
     public String google_id;
     public String google_accesstoken;
+    public String google_refreshtoken;
 }

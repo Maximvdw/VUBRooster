@@ -29,6 +29,7 @@ public class EHBRooster extends BaseCore {
         setStudyProgramManager(new EHBStudyProgramManager(ServiceProvider.getStudyProgramServer()));
         setStaffManager(new EHBStaffManager(ServiceProvider.getStaffServer()));
         setClassRoomManager(new EHBClassRoomManager(ServiceProvider.getClassRoomServer()));
+        setDayMenuManager(new EHBDayMenuManager(ServiceProvider.getDayMenuServer()));
     }
 
     @Override
@@ -40,29 +41,31 @@ public class EHBRooster extends BaseCore {
         courseServer.loadCourses();
         logger.info("Saving courses to database ...");
         courseServer.saveCourses();
+        logger.info("Filtering courses ...");
+        courseServer.cleanCourses();
         logger.info("Loading study programmes ...");
         studyProgramServer.loadStudyProgrammes();
-        logger.info("Loading student groups");
-        studentGroupServer.loadStudentGroups();
         logger.info("Saving study programmes to database ...");
         studyProgramServer.saveStudyProgrammes();
+        logger.info("Loading student groups");
+        studentGroupServer.loadStudentGroups();
         logger.info("Saving student groups to database ...");
         studentGroupServer.saveStudentGroups();
         logger.info("Assigning courses to groups ...");
         studentGroupServer.assignCoursesToGroups();
-        logger.info("Extracting staff members from activities ...");
+        logger.info("Loading staff members ...");
         StaffServer staffServer = ServiceProvider.getStaffServer();
         staffServer.loadStaff();
         logger.info("Saving staff to database ...");
         staffServer.saveStaff();
-        logger.info("Extracting classrooms from activities ...");
+        logger.info("Loading classrooms ...");
         ClassRoomServer classRoomServer = ServiceProvider.getClassRoomServer();
         classRoomServer.loadClassRooms();;
         logger.info("Saving classrooms to database ...");
         classRoomServer.saveClassRooms();
         logger.info("Loading timetables for all courses ...");
         ActivitiyServer activitiyServer = ServiceProvider.getActivitiyServer();
-        Future<Void> activityLoadFuture = null;
+        Future activityLoadFuture = null;
         activityLoadFuture = activitiyServer.loadActivitiesForCourses(true);
         while (!activityLoadFuture.isDone()){
             try {
@@ -71,6 +74,8 @@ public class EHBRooster extends BaseCore {
                 e.printStackTrace();
             }
         }
+        logger.info("Performing garbage collect ...");
+        System.gc(); // Garbage collect
         logger.info("Loading timetables for all extracted teachers ...");
         activityLoadFuture = activitiyServer.loadActivitiesForStaff(false);
         while (!activityLoadFuture.isDone()){
@@ -80,6 +85,8 @@ public class EHBRooster extends BaseCore {
                 e.printStackTrace();
             }
         }
+        logger.info("Performing garbage collect ...");
+        System.gc(); // Garbage collect
         logger.info("Loading timetables for all extracted classrooms ...");
         activityLoadFuture = activitiyServer.loadActivitiesForClassRooms(false);
         while (!activityLoadFuture.isDone()){
@@ -89,8 +96,21 @@ public class EHBRooster extends BaseCore {
                 e.printStackTrace();
             }
         }
+        logger.info("Performing garbage collect ...");
+        System.gc(); // Garbage collect
         logger.info("Loading timetables for all groups...");
         activityLoadFuture = activitiyServer.loadActivitiesForGroups(false);
+        while (!activityLoadFuture.isDone()){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        logger.info("Performing garbage collect ...");
+        System.gc(); // Garbage collect
+        logger.info("Loading timetables for all study programmes...");
+        activityLoadFuture = activitiyServer.loadActivitiesForStudyProgrammes(false);
         while (!activityLoadFuture.isDone()){
             try {
                 Thread.sleep(100);
@@ -103,6 +123,11 @@ public class EHBRooster extends BaseCore {
     @Override
     public void fastSync() {
 
+    }
+
+    @Override
+    public String getDirectory() {
+        return "EHBRooster";
     }
 
     @Override

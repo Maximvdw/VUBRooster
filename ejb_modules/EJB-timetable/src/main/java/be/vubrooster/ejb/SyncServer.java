@@ -18,6 +18,13 @@ public interface SyncServer {
     List<Sync> findSyncs();
 
     /**
+     * Find a sync by id
+     * @param id id to get sync
+     * @return sync
+     */
+    Sync findSyncById(int id);
+
+    /**
      * Get the amount of syncs made
      *
      * @return syncs count

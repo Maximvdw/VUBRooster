@@ -66,8 +66,7 @@ public class EHBClassRoomManager extends ClassRoomManager{
                 idx++;
             }
         } catch (Exception ex) {
-            logger.warn("Unable to get classrooms from site [#3]!");
-            ex.printStackTrace();
+            logger.error("Unable to get classrooms from site [#3]!",ex);
         }
 
         return getClassRoomList();

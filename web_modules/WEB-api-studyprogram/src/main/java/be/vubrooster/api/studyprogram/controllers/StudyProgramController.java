@@ -3,6 +3,7 @@ package be.vubrooster.api.studyprogram.controllers;
 import be.vubrooster.api.studyprogram.service.ServiceProvider;
 import be.vubrooster.ejb.StudyProgramServer;
 import be.vubrooster.ejb.models.StudyProgram;
+import be.vubrooster.utils.JSONUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,8 @@ public class StudyProgramController {
     @RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public
     @ResponseBody
-    ResponseEntity<String> findAlStudyProgrammes(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent)
+    ResponseEntity<String> findAllStudyProgrammes(@RequestHeader(value = "User-Agent", defaultValue = "") String userAgent,
+                                                 @RequestParam(name = "prettyPrint", defaultValue = "false") boolean prettyPrint)
     {
         StudyProgramServer studyProgramServer = ServiceProvider.getStudyProgramServer();
         List<StudyProgram> studyProgramList = studyProgramServer.findStudyProgrammes(false);
@@ -41,7 +43,7 @@ public class StudyProgramController {
         }
         JsonObject jsonObject = Json.createObjectBuilder()
                 .add("studyprogrammes",studyProgramArray).build();
-        return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(prettyPrint ? JSONUtils.prettyPrint(jsonObject) : jsonObject.toString(), HttpStatus.OK);
     }
 
 

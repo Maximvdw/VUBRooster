@@ -52,6 +52,11 @@ public class StudyProgramManager {
         }else{
             StudyProgram existingProgram = studyProgramList.get(studyProgramList.indexOf(studyProgram));
             logger.info("\tStudy program: " + existingProgram.getName());
+            if (existingProgram.getListIdx() != studyProgram.getListIdx()){
+                existingProgram.setListIdx(studyProgram.getListIdx());
+                existingProgram.setDirty(true);
+                existingProgram.setLastUpdate(System.currentTimeMillis() / 1000);
+            }
             existingProgram.setLastSync(System.currentTimeMillis() / 1000);
             return existingProgram;
         }

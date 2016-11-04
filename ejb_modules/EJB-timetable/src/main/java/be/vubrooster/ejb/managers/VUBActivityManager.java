@@ -2,6 +2,7 @@ package be.vubrooster.ejb.managers;
 
 import be.vubrooster.ejb.ActivitiyServer;
 import be.vubrooster.ejb.CourseServer;
+import be.vubrooster.ejb.enums.SyncState;
 import be.vubrooster.ejb.models.*;
 import be.vubrooster.ejb.service.ServiceProvider;
 import be.vubrooster.utils.HtmlUtils;
@@ -22,7 +23,7 @@ import java.util.*;
 public class VUBActivityManager extends ActivityManager {
     private String baseURL = "http://splus.cumulus.vub.ac.be:1184/reporting/individual?periods2=3-27&idtype=name&weeks=1-52&days=1-7&periods=3-31";
 
-    private SimpleDateFormat formatter = new SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("NL"));
+    private SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy", Locale.forLanguageTag("NL"));
 
     private enum TimeTableType {
         STUDENT_INDIVIDUAL,
@@ -72,8 +73,29 @@ public class VUBActivityManager extends ActivityManager {
         List<Thread> threadPool = new ArrayList<>();
         for (final Map.Entry<Integer, List<StudentGroup>> queryGroup : queryGroups.entrySet()) {
             Thread th = new Thread(() -> {
-                logger.info("Fetching timetables: " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
-                fetchGroupTimeTable(queryGroup, currentTimeTable);
+                if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                    // Crashed - Do not retry
+                    logger.warn("Sync timeout - cancelling sync");
+                    return;
+                }
+                logger.info("Fetching group timetables: " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
+                boolean success = false;
+                while (!success){
+                    success = fetchGroupTimeTable(queryGroup, currentTimeTable);
+                    if (!success){
+                        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                            // Crashed - Do not retry
+                            logger.warn("Sync timeout - cancelling sync");
+                            return;
+                        }
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        logger.info("Retrying group timetables " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
+                    }
+                }
             });
             th.start();
             threadPool.add(th);
@@ -125,8 +147,29 @@ public class VUBActivityManager extends ActivityManager {
         List<Thread> threadPool = new ArrayList<>();
         for (final Map.Entry<Integer, List<StaffMember>> queryGroup : queryGroups.entrySet()) {
             Thread th = new Thread(() -> {
+                if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                    // Crashed - Do not retry
+                    logger.warn("Sync timeout - cancelling sync");
+                    return;
+                }
                 logger.info("Fetching staff timetables: " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
-                fetchStaffTimeTable(queryGroup, currentTimeTable);
+                boolean success = false;
+                while (!success){
+                    success = fetchStaffTimeTable(queryGroup, currentTimeTable);
+                    if (!success){
+                        if (ServiceProvider.getTimeTableServer().getSyncState() == SyncState.CRASHED){
+                            // Crashed - Do not retry
+                            logger.warn("Sync timeout - cancelling sync");
+                            return;
+                        }
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        logger.info("Retrying staff timetable " + (queryGroup.getKey() + 1) + "/" + (queryGroups.size()));
+                    }
+                }
             });
             th.start();
             threadPool.add(th);
@@ -219,7 +262,7 @@ public class VUBActivityManager extends ActivityManager {
         }
     }
 
-    private void fetchStaffTimeTable(Map.Entry<Integer, List<StaffMember>> queryGroup, TimeTable currentTimeTable) {
+    private boolean fetchStaffTimeTable(Map.Entry<Integer, List<StaffMember>> queryGroup, TimeTable currentTimeTable) {
         try {
             String timetableURL = baseURL;
             for (StaffMember staffMember : queryGroup.getValue()) {
@@ -248,21 +291,16 @@ public class VUBActivityManager extends ActivityManager {
                     parseTimeTable(member, table, currentTimeTable);
                 }
             }
+            return true;
         } catch (ConnectException | SocketTimeoutException ex) {
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            logger.info("Retrying ...");
-            fetchStaffTimeTable(queryGroup, currentTimeTable);
+            return false;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Unable to get staff timetables from site!",ex);
         }
-
+        return false;
     }
 
-    private void fetchGroupTimeTable(Map.Entry<Integer, List<StudentGroup>> queryGroup, TimeTable currentTimeTable) {
+    private boolean fetchGroupTimeTable(Map.Entry<Integer, List<StudentGroup>> queryGroup, TimeTable currentTimeTable) {
         try {
             String timetableURL = baseURL;
             boolean grouped = false;
@@ -274,7 +312,7 @@ public class VUBActivityManager extends ActivityManager {
             Document timetablePage = Jsoup.parse(HtmlUtils.sendGetRequest(timetableURL, new HashMap<>(), 25000).getSource());
 
             // Get year start date
-            String startDate = timetablePage.select(grouped ? ".header-4-0-3" : ".header-6-0-3").first().html();
+            String startDate = timetablePage.select(grouped ? ".header-4-0-3" : ".header-7-0-3").first().html();
             currentTimeTable.setStartTimeStamp(formatter.parse(startDate).getTime() / 1000);
 
             int i = 0;
@@ -297,18 +335,13 @@ public class VUBActivityManager extends ActivityManager {
                     parseTimeTable(group, table, currentTimeTable);
                 }
             }
+            return true;
         } catch (ConnectException | SocketTimeoutException ex) {
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            logger.info("Retrying ...");
-            fetchGroupTimeTable(queryGroup, currentTimeTable);
+            return false;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Unable to get group timetables from site!",ex);
         }
-
+        return false;
     }
 
     private List<Activity> parseTimeTable(Element table, TimeTable currentTimeTable, SimpleDateFormat timeFormatter, CourseServer courseServer, TimeTableType timeTableType) {
@@ -370,6 +403,11 @@ public class VUBActivityManager extends ActivityManager {
 
                             // Try to match it to an existing course
                             Course course = courseServer.findCourseByName(eventName, true);
+                            if (course == null){
+                                if (eventName.contains(" (WPO") || eventName.contains(" (HOC")) {
+                                    course = courseServer.findCourseByName(eventName.substring(0, eventName.indexOf("(") - 1), true);
+                                }
+                            }
                             // Add the event for all weeks
                             for (int week : weeks) {
                                 Activity activity = new Activity(eventName, eventClass);
@@ -395,6 +433,13 @@ public class VUBActivityManager extends ActivityManager {
                                     activity.getCourses().add(course);
                                 }
 
+                                // Get lesson form
+                                if (eventName.contains("HOC")){
+                                    activity.setLessonForm("H");
+                                }else if (eventName.contains("WPO")){
+                                    activity.setLessonForm("W");
+                                }
+
                                 // Get the start unix time of the week
                                 // It is the start week (fex 19 sep 2016) + week
                                 long weekStart = currentTimeTable.getStartTimeStamp() + ((60 * 60 * 24 * 7) * (week - 1));
@@ -416,38 +461,39 @@ public class VUBActivityManager extends ActivityManager {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Unable to get parse timetable!",ex);
         }
-        List<Activity> courseLessActivities = new ArrayList<>();
-        for (Activity activity : activityList) {
-            if (activity.getCourses().size() == 0) {
-                courseLessActivities.add(activity);
-            }
-        }
-        Map<String, Integer> nameCounter = new HashMap<>();
-        for (Activity activity : courseLessActivities) {
-            if (nameCounter.containsKey(activity.getName())) {
-                nameCounter.put(activity.getName(), nameCounter.get(activity.getName()) + 1);
-            } else {
-                nameCounter.put(activity.getName(), 1);
-            }
-        }
-        for (Map.Entry<String, Integer> names : nameCounter.entrySet()) {
-            if (names.getValue() > 2) {
-                Course course = new Course(names.getKey());
-                course.setDirty(true);
-                course.setLastUpdate(System.currentTimeMillis() / 1000);
-                course.setLastSync(System.currentTimeMillis() / 1000);
-                ServiceProvider.getCourseServer().createCourse(course);
-            }
-        }
-        for (Activity activity : courseLessActivities) {
-            // Try to match it to an existing course
-            Course course = courseServer.findCourseByName(activity.getName(), true);
-            if (course != null) {
-                activity.getCourses().add(course);
-            }
-        }
+//        List<Activity> courseLessActivities = new ArrayList<>();
+//        for (Activity activity : activityList) {
+//            if (activity.getCourses().size() == 0) {
+//                courseLessActivities.add(activity);
+//            }
+//        }
+//        Map<String, Integer> nameCounter = new HashMap<>();
+//        for (Activity activity : courseLessActivities) {
+//            if (nameCounter.containsKey(activity.getName())) {
+//                nameCounter.put(activity.getName(), nameCounter.get(activity.getName()) + 1);
+//            } else {
+//                nameCounter.put(activity.getName(), 1);
+//            }
+//        }
+//        for (Map.Entry<String, Integer> names : nameCounter.entrySet()) {
+//            if (names.getValue() > 2) {
+//                Course course = new Course(names.getKey());
+//                logger.info("Creating new 'Fake' course named: " + course.getName());
+//                course.setDirty(true);
+//                course.setLastUpdate(System.currentTimeMillis() / 1000);
+//                course.setLastSync(System.currentTimeMillis() / 1000);
+//                ServiceProvider.getCourseServer().createCourse(course);
+//            }
+//        }
+//        for (Activity activity : courseLessActivities) {
+//            // Try to match it to an existing course
+//            Course course = courseServer.findCourseByName(activity.getName(), true);
+//            if (course != null) {
+//                activity.getCourses().add(course);
+//            }
+//        }
         return activityList;
     }
 
@@ -458,7 +504,7 @@ public class VUBActivityManager extends ActivityManager {
 
         CourseServer courseServer = ServiceProvider.getCourseServer();
 
-        logger.info("Extracting models for group: " + group.getName());
+        logger.debug("Extracting models for group: " + group.getName());
         List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer, TimeTableType.STUDENT_GROUPED);
         for (Activity activity : activityList) {
             activity.addGroup(group);
@@ -473,7 +519,7 @@ public class VUBActivityManager extends ActivityManager {
 
         CourseServer courseServer = ServiceProvider.getCourseServer();
 
-        logger.info("Extracting models for staff member: " + staffMember.getName());
+        logger.debug("Extracting models for staff member: " + staffMember.getName());
         List<Activity> activityList = parseTimeTable(table, currentTimeTable, timeFormatter, courseServer, TimeTableType.STAFF);
         for (Activity activity : activityList) {
             activity.setStaff(staffMember.getName());

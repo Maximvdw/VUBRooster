@@ -33,7 +33,7 @@ public interface StudyProgramServer {
      * @param useCache use cache
      * @return study program if found
      */
-    StudyProgram findStudyProgramById(int id, boolean useCache);
+    StudyProgram findStudyProgramById(String id, boolean useCache);
 
     /**
      * Find study program by name
